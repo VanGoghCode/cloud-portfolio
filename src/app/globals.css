@@ -1,12 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -14,13 +10,304 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
     --foreground: #ededed;
   }
 }
 
 body {
-  background: var(--background);
+  position: relative;
+  background: #FAFAFA;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  pointer-events: none;
+  inset: 0;
+  background: 
+    /* Animated color gradients */
+    /* radial-gradient(circle 500px at 20% 20%, rgba(232, 221, 208, 0.95) 0%, rgba(232, 221, 208, 0.65) 40%, transparent 70%), */
+    radial-gradient(circle 1000px at 35% 30%, rgb(204, 158, 113, 0.3) 0%, rgba(212, 196, 200, 0.55) 70%, transparent 20%),
+    radial-gradient(circle 1700px at 25% 30%, rgba(230, 209, 188, 0.7) 0%, rgba(212, 196, 200, 0.55) 70%, transparent 20%),
+    /* radial-gradient(circle 480px at 50% 40%, rgba(220, 205, 210, 0.85) 0%, rgba(220, 205, 210, 0.5) 45%, transparent 70%), */
+    radial-gradient(circle 1000px at 80% 70%, rgba(127, 195, 214, 0.95) 0%, rgba(174, 187, 184, 0.6) 80%, transparent 70%);
+  filter: blur(120px);
+  z-index: -2;
+  animation: moveBackground 60s linear infinite;
+}
+
+@keyframes moveBackground {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 0% -1000%;
+  }
+}
+
+/* Floating animation for cloud icon */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Gentle rotation animation */
+@keyframes floatRotate {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(3deg);
+  }
+}
+
+/* Pulsing glow animation - Subtle shimmer */
+@keyframes glowPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.9))
+            drop-shadow(0 0 6px rgba(255, 255, 255, 0.7))
+            drop-shadow(0 0 10px rgba(255, 255, 240, 0.5))
+            drop-shadow(0 0 15px rgba(255, 250, 200, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 1))
+            drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))
+            drop-shadow(0 0 12px rgba(255, 255, 240, 0.6))
+            drop-shadow(0 0 18px rgba(255, 250, 200, 0.4));
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom Glowing Scrollbar - Hidden */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+  display: none;
+}
+
+::-webkit-scrollbar-track {
+  display: none;
+}
+
+::-webkit-scrollbar-thumb {
+  display: none;
+}
+
+/* Firefox scrollbar - Hidden */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Modern Minimalistic Animated Styles */
+
+/* Smooth fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Subtle pulse animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Smooth scale animation */
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Slide in from right */
+@keyframes slideInRight {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Minimalistic Container */
+.minimal-container {
+  position: relative;
+  padding: 32px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeIn 0.6s ease-out;
+}
+
+.minimal-container:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Minimalistic Button */
+.minimal-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 12px 28px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+  overflow: hidden;
+}
+
+.minimal-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.minimal-btn:hover::before {
+  left: 100%;
+}
+
+.minimal-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.minimal-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Button Size Variants */
+.minimal-btn-sm {
+  padding: 8px 20px;
+  font-size: 14px;
+  border-radius: 10px;
+}
+
+.minimal-btn-lg {
+  padding: 16px 36px;
+  font-size: 18px;
+  border-radius: 14px;
+}
+
+/* Minimalistic Card */
+.minimal-card {
+  position: relative;
+  padding: 24px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: scaleIn 0.5s ease-out;
+}
+
+.minimal-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.minimal-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.minimal-card:hover::after {
+  opacity: 1;
+}
+
+/* Accent border animation */
+@keyframes borderPulse {
+  0%, 100% {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.minimal-card.animate-border {
+  animation: borderPulse 3s ease-in-out infinite;
+}
+
+/* Floating Cloud Icon Styles */
+.floating-cloud {
+  animation: floatRotate 6s ease-in-out infinite;
+}
+
+.cloud-glow {
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 1))
+          drop-shadow(0 0 12px rgba(255, 255, 255, 0.95))
+          drop-shadow(0 0 18px rgba(255, 255, 255, 0.9))
+          drop-shadow(0 0 50px rgba(255, 255, 255, 0.4));
+  transition: filter 0.3s ease;
+}
+
+.floating-cloud:hover .cloud-glow {
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 1))
+          drop-shadow(0 0 25px rgba(255, 255, 255, 0.95))
+          drop-shadow(0 0 90px rgba(255, 255, 255, 0.4));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .floating-cloud {
+    animation: none;
+  }
 }
