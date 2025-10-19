@@ -6,6 +6,30 @@ export default function Home() {
       {/* Hero Section */}
       <Hero />
 
+      {/* About Section - Placeholder */}
+      <section id="about" className="min-h-screen w-full flex items-center justify-center px-4 sm:px-6 md:px-8">
+        <div className="text-center">
+          <h2 className="text-4xl font-bold mb-4">About</h2>
+          <p className="text-lg opacity-80">Coming soon...</p>
+        </div>
+      </section>
+
+      {/* Projects Section - Placeholder */}
+      <section id="projects" className="min-h-screen w-full flex items-center justify-center px-4 sm:px-6 md:px-8">
+        <div className="text-center">
+          <h2 className="text-4xl font-bold mb-4">Projects</h2>
+          <p className="text-lg opacity-80">Coming soon...</p>
+        </div>
+      </section>
+
+      {/* Contact Section - Placeholder */}
+      <section id="contact" className="min-h-screen w-full flex items-center justify-center px-4 sm:px-6 md:px-8">
+        <div className="text-center">
+          <h2 className="text-4xl font-bold mb-4">Contact</h2>
+          <p className="text-lg opacity-80">Coming soon...</p>
+        </div>
+      </section>
+
       {/* Footer */}
       {/* <Footer
         name="Kirtan thummar"
