@@ -7,7 +7,6 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   variant?: ButtonVariant;
   size?: ButtonSize;
   children: React.ReactNode;
-  asChild?: boolean;
   href?: string;
   target?: string;
   rel?: string;
@@ -18,8 +17,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     variant = "primary", 
     size = "md", 
     className = "", 
-    children, 
-    asChild,
+    children,
     href,
     target,
     rel,
