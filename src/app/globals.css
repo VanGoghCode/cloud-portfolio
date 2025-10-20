@@ -25,6 +25,34 @@ body {
   min-height: 100vh;
 }
 
+/* Top white-ish gradient overlay for modern scroll effect */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 15vh;
+  background: linear-gradient(
+    to bottom,
+    rgba(250, 250, 250, 0.55) 0%,
+    rgba(250, 250, 250, 0.5) 10%,
+    rgba(250, 250, 250, 0.45) 20%,
+    rgba(250, 250, 250, 0.4) 30%,
+    rgba(250, 250, 250, 0.35) 40%,
+    rgba(250, 250, 250, 0.3) 50%,
+    rgba(250, 250, 250, 0.25) 60%,
+    rgba(250, 250, 250, 0.2) 70%,
+    rgba(250, 250, 250, 0.15) 80%,
+    rgba(250, 250, 250, 0.07) 90%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 999;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 /* Ensure sections are in the correct stacking context */
 section {
   position: relative;
@@ -98,6 +126,43 @@ body::before {
   }
 }
 
+/* Slow floating animation for tech icons */
+@keyframes slowFloat {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-15px) translateX(10px) rotate(5deg);
+  }
+  50% {
+    transform: translateY(-25px) translateX(-5px) rotate(-3deg);
+  }
+  75% {
+    transform: translateY(-10px) translateX(8px) rotate(3deg);
+  }
+}
+
+/* Tech icons container */
+.floating-tech-icons {
+  animation: fadeIn 1s ease-out 1s backwards;
+}
+
+/* Individual tech icon float animation */
+.tech-icon-float {
+  animation: slowFloat 20s ease-in-out infinite;
+  transition: opacity 0.4s ease;
+}
+
+.tech-icon-float:hover {
+  opacity: 0.4 !important;
+  z-index: 100;
+}
+
+/* Ensure tooltips are visible */
+.tech-icon-float .group:hover {
+  z-index: 100;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -166,8 +231,36 @@ html {
   }
 }
 
+/* Slide in from left - for added variety */
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Subtle glow pulse for interactive elements */
+@keyframes subtleGlow {
+  0%, 100% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  }
+  50% {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08), 0 0 20px rgba(255, 255, 255, 0.1);
+  }
+}
+
 /* Floating animation for cloud icon */
 .floating-cloud {
+  animation: floatRotate 6s ease-in-out infinite;
+}
+
+/* Floating animation for cloud and motto together - synced */
+.floating-cloud-motto {
   animation: floatRotate 6s ease-in-out infinite;
 }
 
@@ -185,11 +278,12 @@ html {
   display: block;
   position: relative;
   font-weight: 600;
-  font-size: clamp(1.75rem, 5vw, 4.5rem);
+  font-size: clamp(1rem, 5vw, 2rem);
   line-height: 1.3;
-  letter-spacing: -0.02em;
+  /* letter-spacing: -0.02em; */
   color: #FFFFED;
   text-align: center;
+  width: fit-content;
 }
 
 @media (min-width: 1024px) {
@@ -202,6 +296,7 @@ html {
 .motto-word {
   display: inline-block;
   white-space: nowrap;
+  position: relative;
 }
 
 /* Individual character */
@@ -211,6 +306,42 @@ html {
   transform-origin: center bottom;
   cursor: default;
   position: relative;
+}
+
+/* Special styling for "Beyond" word with textured box */
+.motto-beyond {
+  position: relative;
+  padding: 0.3em 0.6em;
+  margin: 0 0.2em;
+  border-radius: 12px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Minimal textured background for Beyond */
+.motto-beyond::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255, 255, 255, 0.03) 2px, rgba(255, 255, 255, 0.03) 4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: -1;
+}
+
+/* Hover state for Beyond */
+.motto-beyond.hovered::before {
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255, 255, 255, 0.08) 2px, rgba(255, 255, 255, 0.08) 4px);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 
+    0 4px 20px rgba(255, 255, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
 }
 
 /* Fade and slide animation for motto */
@@ -255,6 +386,15 @@ html {
     justify-content: center;
     height: 100vh;
   }
+
+  /* Make tech icons smaller and less visible on mobile */
+  .tech-icon-float span {
+    font-size: 2rem !important;
+  }
+  
+  .tech-icon-float {
+    opacity: 0.15 !important;
+  }
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
@@ -274,10 +414,17 @@ html {
 
 @media (min-width: 1025px) {
   .hero-container {
+    height: 100vh;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1476px) {
+  .hero-container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    height: 100vh;
   }
 }
 
@@ -296,10 +443,151 @@ html {
     animation: none;
   }
 
+  .floating-cloud-motto {
+    animation: none;
+  }
+
+  .tech-icon-float {
+    animation: none;
+  }
+
   .hero-motto-line {
     animation: none;
     opacity: 1;
   }
+}
+
+/* Profile Section Styles - Minimalist & Modern */
+.profile-section {
+  animation: fadeIn 0.8s ease-out;
+  position: relative;
+}
+
+.profile-image-wrapper {
+  position: relative;
+  animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
+}
+
+.profile-image-wrapper img {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-image-wrapper:hover img {
+  transform: scale(1.08) rotate(2deg);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+}
+
+/* Profile Info Container with subtle background effect */
+.profile-info {
+  animation: fadeIn 0.8s ease-out 0.3s backwards;
+  position: relative;
+  padding: 1.5rem;
+  /* border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); */
+}
+
+/* .profile-info:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.15) 100%);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.4);
+} */
+
+/* Name with gradient text effect */
+.profile-info h1 {
+  background: linear-gradient(135deg, #171717 0%, #404040 50%, #171717 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: fadeIn 0.6s ease-out 0.4s backwards, shimmer 3s linear infinite;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  transition: all 0.3s ease;
+}
+
+.profile-info h1:hover {
+  letter-spacing: 0.01em;
+}
+
+/* Shimmer animation for name */
+@keyframes shimmer {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Title with underline effect */
+.profile-info p:first-of-type {
+  animation: slideInRight 0.6s ease-out 0.5s backwards;
+  position: relative;
+  display: inline-block;
+  font-weight: 500;
+  padding-bottom: 0.3rem;
+}
+
+.profile-info p:first-of-type::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #404040, #171717);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-info:hover p:first-of-type::after {
+  width: 100%;
+}
+
+/* Description with enhanced readability */
+.profile-info p:last-of-type {
+  animation: fadeIn 0.6s ease-out 0.6s backwards;
+  line-height: 1.7;
+  color: rgba(23, 23, 23, 0.8);
+  transition: color 0.3s ease;
+}
+
+.profile-info:hover p:last-of-type {
+  color: rgba(23, 23, 23, 0.95);
+}
+
+/* Professional highlight badges with staggered animation */
+.profile-info > div:last-child span:nth-child(1) {
+  animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.7s backwards;
+}
+
+.profile-info > div:last-child span:nth-child(2) {
+  animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.8s backwards;
+}
+
+.profile-info > div:last-child span:nth-child(3) {
+  animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.9s backwards;
+}
+
+/* Status indicator pulse animation */
+@keyframes statusPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.motto-section {
+  animation: fadeIn 0.8s ease-out 0.4s backwards;
 }
 
 /* Header Styles - Simple Clean Design */

@@ -4,7 +4,11 @@ export default function Home() {
   return (
     <main>
       {/* Hero Section */}
-      <Hero />
+      <Hero 
+        name="Kirtan Thummar"
+        title="Cloud Developer & Designer"
+        description="Passionate about creating beautiful and functional digital experiences. Specializing in cloud technologies and modern web development."
+      />
 
       {/* About Section - Placeholder */}
       <section id="about" className="min-h-screen w-full flex items-center justify-center px-4 sm:px-6 md:px-8">
