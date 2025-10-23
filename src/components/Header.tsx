@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({
     { label: 'Home', href: '#home' },
     { label: 'About', href: '#about' },
     { label: 'Projects', href: '#projects' },
-    { label: 'Blogs', href: '/blogs', target: '_blank', rel: 'noopener noreferrer' },
+    { label: 'Blogs', href: '/blogs' },
     { label: 'Contact', href: '#contact' },
   ],
 }) => {

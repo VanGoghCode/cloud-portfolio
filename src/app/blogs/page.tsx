@@ -3,7 +3,8 @@ import { Section } from "@/components";
 
 export const metadata = {
   title: "Blogs | Kirtankumar [K.K.]",
-  description: "Thoughts, notes, and write-ups on cloud, web, and developer experience.",
+  description:
+    "Thoughts, notes, and write-ups on cloud, web, and developer experience.",
 };
 
 export default function BlogPage() {
@@ -36,7 +37,7 @@ export default function BlogPage() {
 
   return (
     <main>
-  <Section id="blogs" spacing="lg" containerSize="lg">
+      <Section id="blogs" spacing="xl" containerSize="lg">
         <div className="space-y-16">
           {/* Header */}
           <div className="text-center space-y-6">
@@ -50,7 +51,8 @@ export default function BlogPage() {
               <div className="h-1.5 bg-gradient-to-r from-transparent via-foreground to-transparent rounded-full mt-4" />
             </div>
             <p className="text-xl sm:text-2xl text-foreground/60 max-w-3xl mx-auto leading-relaxed">
-              Notes on building for the cloud, crafting clean UIs, and shipping fast.
+              Notes on building for the cloud, crafting clean UIs, and shipping
+              fast.
             </p>
           </div>
 
