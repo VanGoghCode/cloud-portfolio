@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 interface NavLink {
   label: string;
   href: string;
+  target?: string;
+  rel?: string;
 }
 
 interface HeaderProps {
@@ -14,17 +16,34 @@ interface HeaderProps {
   navLinks?: NavLink[];
 }
 
+type ComputedLink = NavLink & { __sectionId?: string };
+
 const Header: React.FC<HeaderProps> = ({
   navLinks = [
     { label: 'Home', href: '#home' },
     { label: 'About', href: '#about' },
     { label: 'Projects', href: '#projects' },
+    { label: 'Blogs', href: '/blogs', target: '_blank', rel: 'noopener noreferrer' },
     { label: 'Contact', href: '#contact' },
   ],
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+  const pathname = usePathname();
+
+  // Compute links based on current route: section links become /#id when not on home
+  const computedLinks: ComputedLink[] = useMemo(() => {
+    return navLinks.map((link): ComputedLink => {
+      const isSection = link.href.startsWith('#');
+      if (isSection) {
+        const id = link.href.slice(1);
+        const href = pathname === '/' ? `#${id}` : `/#${id}`;
+        return { ...link, href, __sectionId: id };
+      }
+      return { ...link };
+    });
+  }, [navLinks, pathname]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,12 +84,24 @@ const Header: React.FC<HeaderProps> = ({
     };
   }, [isMobileMenuOpen]);
 
+  // Active highlighting logic
   useEffect(() => {
+    // On non-home pages, highlight by pathname (e.g., /blogs)
+    if (pathname !== '/') {
+      if (pathname.startsWith('/blogs')) {
+        setActiveSection('blogs');
+      } else {
+        setActiveSection('');
+      }
+      return;
+    }
+
+    // On home page, use IntersectionObserver to track visible section
     const observerOptions = {
       root: null,
       rootMargin: '-20% 0px -70% 0px',
       threshold: 0,
-    };
+    } as IntersectionObserverInit;
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
       entries.forEach((entry) => {
@@ -82,30 +113,24 @@ const Header: React.FC<HeaderProps> = ({
     };
 
     const observer = new IntersectionObserver(observerCallback, observerOptions);
+    const sectionIds = computedLinks
+      .filter((l) => l.__sectionId)
+      .map((l) => l.__sectionId!);
 
-    // Observe all sections
-    const sections = navLinks.map(link => link.href.substring(1));
-    sections.forEach(sectionId => {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        observer.observe(element);
-      }
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
     });
 
-    // Set initial active section
-    if (window.scrollY < 100) {
-      setActiveSection('home');
-    }
+    if (window.scrollY < 100) setActiveSection('home');
 
     return () => {
-      sections.forEach(sectionId => {
-        const element = document.getElementById(sectionId);
-        if (element) {
-          observer.unobserve(element);
-        }
+      sectionIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) observer.unobserve(el);
       });
     };
-  }, [navLinks]);
+  }, [pathname, computedLinks]);
 
   return (
     <header className="header-wrapper">
@@ -114,28 +139,21 @@ const Header: React.FC<HeaderProps> = ({
           isScrolled ? 'header-scrolled' : ''
         }`}
       >
-        {/* Logo */}
-        <Link href="/" className="header-logo">
-          <Image 
-            src="/logo.png" 
-            alt="Portfolio Logo" 
-            width={80} 
-            height={40}
-            priority
-            className="logo-image"
-          />
-        </Link>
-
         {/* Desktop Navigation */}
         <ul className="nav-links">
-          {navLinks.map((link, index) => {
-            const sectionId = link.href.substring(1);
-            const isActive = activeSection === sectionId;
+          {computedLinks.map((link, index) => {
+            const sectionId = link.__sectionId;
+            const isRoute = !link.href.startsWith('#') && !link.href.startsWith('/#');
+            const isActive = pathname === '/'
+              ? sectionId ? activeSection === sectionId : false
+              : isRoute ? pathname.startsWith(link.href) : false;
             return (
               <li key={index}>
                 <Link 
-                  href={link.href} 
+                  href={link.href}
                   className={`nav-link ${isActive ? 'active' : ''}`}
+                  target={link.target}
+                  rel={link.rel}
                 >
                   {link.label}
                 </Link>
@@ -167,14 +185,19 @@ const Header: React.FC<HeaderProps> = ({
       {/* Mobile Menu */}
       <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
         <ul className="mobile-nav-links">
-          {navLinks.map((link, index) => {
-            const sectionId = link.href.substring(1);
-            const isActive = activeSection === sectionId;
+          {computedLinks.map((link, index) => {
+            const sectionId = link.__sectionId;
+            const isRoute = !link.href.startsWith('#') && !link.href.startsWith('/#');
+            const isActive = pathname === '/'
+              ? sectionId ? activeSection === sectionId : false
+              : isRoute ? pathname.startsWith(link.href) : false;
             return (
               <li key={index}>
                 <Link
                   href={link.href}
                   className={`mobile-nav-link ${isActive ? 'active' : ''}`}
+                  target={link.target}
+                  rel={link.rel}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.label}

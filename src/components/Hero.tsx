@@ -180,6 +180,7 @@ export default function Hero({
                   src="/profile.jpg"
                   alt={name}
                   fill
+                  sizes="(max-width: 640px) 160px, (max-width: 768px) 176px, (max-width: 1024px) 208px, 280px"
                   className="object-cover rounded-full border-4 border-white/30 shadow-2xl relative z-10"
                   priority
                 />
@@ -218,6 +219,7 @@ export default function Hero({
                   src="/cloud-icon.png"
                   alt="Cloud Icon"
                   fill
+                  sizes="(max-width: 640px) 128px, (max-width: 768px) 176px, (max-width: 1024px) 224px, 288px"
                   className="object-contain floating-cloud cloud-glow"
                   priority
                 />
