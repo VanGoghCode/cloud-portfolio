@@ -1,8 +1,20 @@
 import React from "react";
 
+/**
+ * Visual variants supported by the shared Button component.
+ * - primary: Solid foreground background with strong emphasis
+ * - secondary: Subtle frosted/white background for less emphasis
+ * - outline: Transparent with a visible outline; good for secondary actions
+ * - ghost: Bare minimum styles; blends with background on hover
+ * - minimal: Reserved for custom minimal styling via external CSS (unused by default)
+ */
 export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "minimal";
 export type ButtonSize = "sm" | "md" | "lg";
 
+/**
+ * Shared Button props used across the app. Renders a <button> by default,
+ * or an <a> element if `href` is provided.
+ */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;

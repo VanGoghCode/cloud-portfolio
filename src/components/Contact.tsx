@@ -1,17 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { Section } from "@/components";
+import { Section, Button } from "@/components";
 import {
   FaGithub,
   FaLinkedin,
-  FaTwitter,
+  FaInstagram,
   FaEnvelope,
   FaMapMarkerAlt,
   FaPaperPlane,
   FaArrowRight,
 } from "react-icons/fa";
-import { SiDiscord } from "react-icons/si";
+import { FaXTwitter } from "react-icons/fa6";
 
 interface ContactProps {
   email?: string;
@@ -19,37 +19,37 @@ interface ContactProps {
 }
 
 export default function Contact({
-  email = "hello@example.com",
-  location = "San Francisco, CA",
+  email = "kirtanthummar.uni@gmail.com",
+  location = "Tempe, AZ • [ Open to relocate ]",
 }: ContactProps) {
   const socialLinks = [
     {
       platform: "GitHub",
-      url: "https://github.com",
+      url: "https://github.com/VanGoghCode",
       icon: <FaGithub className="text-xl" />,
       color: "#333",
       gradient: "from-gray-500 to-gray-700",
     },
     {
       platform: "LinkedIn",
-      url: "https://linkedin.com",
+      url: "https://www.linkedin.com/in/kirtankumar-thummar/",
       icon: <FaLinkedin className="text-xl" />,
       color: "#0077B5",
       gradient: "from-blue-500 to-blue-700",
     },
     {
-      platform: "Twitter",
-      url: "https://twitter.com",
-      icon: <FaTwitter className="text-xl" />,
-      color: "#1DA1F2",
-      gradient: "from-sky-400 to-sky-600",
+      platform: "X",
+      url: "https://x.com",
+      icon: <FaXTwitter className="text-xl" />,
+      color: "#111111",
+      gradient: "from-neutral-500 to-neutral-700",
     },
     {
-      platform: "Discord",
-      url: "https://discord.com",
-      icon: <SiDiscord className="text-xl" />,
-      color: "#5865F2",
-      gradient: "from-indigo-500 to-indigo-700",
+      platform: "Instagram",
+      url: "https://www.instagram.com/k_.k_thummar/#",
+      icon: <FaInstagram className="text-xl" />,
+      color: "#E4405F",
+      gradient: "from-pink-500 to-orange-500",
     },
   ];
   const [formData, setFormData] = useState({
@@ -258,10 +258,10 @@ export default function Contact({
               </div>
 
               {/* Submit Button */}
-              <button
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-foreground text-background rounded-xl font-bold text-lg hover:scale-[1.02] hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 group border border-white/20 focus:-translate-y-1 focus:shadow-2xl focus:ring-2 focus:ring-white/30"
+                className="w-full flex items-center justify-center gap-3 rounded-xl font-bold text-lg hover:scale-[1.02] hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 group border border-white/20 focus:-translate-y-1 focus:shadow-2xl"
               >
                 {isSubmitting ? (
                   <>
@@ -274,7 +274,7 @@ export default function Contact({
                     <FaPaperPlane className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                   </>
                 )}
-              </button>
+              </Button>
 
               {/* Status Messages */}
               {submitStatus === "success" && (
@@ -350,17 +350,17 @@ export default function Contact({
             <div
               className="inline-flex items-center gap-3 px-6 py-3 rounded-full"
               style={{
-                background: "rgba(34, 197, 94, 0.1)",
+                background: "linear-gradient(to right, #4ade80, #10b981)",
                 backdropFilter: "blur(10px)",
                 WebkitBackdropFilter: "blur(10px)",
+                border: "2px solid rgb(255, 255, 255)",
               }}
             >
               <div className="relative flex items-center">
-                <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
-                <div className="absolute w-2.5 h-2.5 bg-green-500 rounded-full animate-ping"></div>
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
               </div>
-              <span className="font-semibold text-foreground">
-                Available for new projects
+              <span className="font-semibold text-white">
+                OpenToWork – Cloud & Platform roles • Tempe, AZ • open to relocate
               </span>
             </div>
           </div>

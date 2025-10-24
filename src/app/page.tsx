@@ -3,36 +3,14 @@ import { Hero, About, Projects, Contact } from "@/components";
 export default function Home() {
   return (
     <main>
-      {/* Hero Section */}
       <Hero 
         name="Kirtan Thummar"
-        title="Cloud Developer & Designer"
-        description="Passionate about creating beautiful and functional digital experiences. Specializing in cloud technologies and modern web development."
+        title="Cloud-Native / DevOps Engineer"
+        description="Cloud engineer who turns ideas into reliable, low-cost AWS platforms, built 10 production repos, codified EKS clusters, and cut spend 70 % through spot + caching. Three years designing secure, scalable infrastructure, now ready to ship resilient systems that save money and recover in seconds."
       />
-
-      {/* About Section */}
       <About />
-
-      {/* Projects Section */}
       <Projects />
-
-      {/* Contact Section */}
       <Contact />
-
-      {/* Footer */}
-      {/* <Footer
-        name="Kirtan thummar"
-        links={[
-          { label: "About", href: "#about" },
-          { label: "Projects", href: "#work" },
-          { label: "Contact", href: "#contact" },
-        ]}
-        socialLinks={[
-          { label: "GitHub", href: "https://github.com" },
-          { label: "LinkedIn", href: "https://linkedin.com" },
-          { label: "Twitter", href: "https://twitter.com" },
-        ]}
-      /> */}
     </main>
   );
 }

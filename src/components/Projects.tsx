@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Section } from '@/components';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Section, Button } from '@/components';
 import { FaExternalLinkAlt, FaGithub } from 'react-icons/fa';
 import { 
   SiReact, SiNextdotjs, SiTypescript, SiTailwindcss, 
@@ -46,68 +46,116 @@ const techIcons: Record<string, React.ReactNode> = {
 export default function Projects({
   projects = [
     {
-      title: 'Cloud Infrastructure Platform',
-      description: 'Enterprise-grade cloud management solution',
-      longDescription: 'Built a scalable cloud infrastructure management platform using AWS, Terraform, and React. Reduced deployment time by 60% and improved system reliability.',
-      tags: ['AWS', 'Terraform', 'React', 'Node.js', 'TypeScript'],
+      title: 'eks-argo-gitops',
+      description: 'Production EKS with Karpenter & ArgoCD',
+      longDescription: 'Production-grade EKS with Karpenter, 60% cheaper nodes, ArgoCD bootstrap in 7 min. Full GitOps workflow.',
+      tags: ['Kubernetes', 'AWS', 'Terraform', 'ArgoCD'],
       category: 'Cloud',
-      link: 'https://example.com',
       github: 'https://github.com',
       gradient: 'from-blue-500 to-cyan-500',
       featured: true,
     },
     {
-      title: 'E-Commerce Dashboard',
-      description: 'Real-time analytics & insights platform',
-      longDescription: 'Developed a modern analytics dashboard for e-commerce platforms with real-time data visualization, customer insights, and revenue tracking.',
-      tags: ['Next.js', 'TypeScript', 'MongoDB', 'Tailwind'],
-      category: 'Web',
-      link: 'https://example.com',
-      github: 'https://github.com',
-      gradient: 'from-purple-500 to-pink-500',
-      featured: true,
-    },
-    {
-      title: 'DevOps Automation Suite',
-      description: 'CI/CD pipeline automation toolkit',
-      longDescription: 'Created automated CI/CD pipelines and deployment workflows for microservices architecture, reducing deployment time by 80%.',
-      tags: ['Docker', 'Kubernetes', 'Python', 'AWS'],
+      title: 'url-shortener-go',
+      description: 'Go REST API with Helm & Docker',
+      longDescription: 'Go REST API, ≤50ms p99, 80% test coverage, Helm + Docker multi-stage. Production-ready microservice.',
+      tags: ['Kubernetes', 'Docker', 'Terraform'],
       category: 'DevOps',
       github: 'https://github.com',
       gradient: 'from-orange-500 to-red-500',
-    },
-    {
-      title: 'AI-Powered Chatbot',
-      description: 'Intelligent conversational AI assistant',
-      longDescription: 'Designed and implemented an intelligent chatbot using natural language processing and machine learning for customer support automation.',
-      tags: ['Python', 'TensorFlow', 'React', 'Node.js'],
-      category: 'AI/ML',
-      link: 'https://example.com',
-      gradient: 'from-green-500 to-emerald-500',
-    },
-    {
-      title: 'Serverless API Gateway',
-      description: 'High-performance serverless architecture',
-      longDescription: 'Developed a serverless API gateway handling millions of requests with auto-scaling, monitoring, and cost optimization.',
-      tags: ['AWS', 'Node.js', 'TypeScript', 'MongoDB'],
-      category: 'Cloud',
-      github: 'https://github.com',
-      gradient: 'from-yellow-500 to-amber-500',
       featured: true,
     },
     {
-      title: 'Design System Library',
-      description: 'Reusable component library',
-      longDescription: 'Built a comprehensive design system with 50+ reusable components, reducing development time by 40% across multiple projects.',
-      tags: ['React', 'TypeScript', 'Tailwind'],
-      category: 'Web',
-      link: 'https://example.com',
+      title: 'resume-parser-api',
+      description: 'Async PDF→JSON on Fargate Spot',
+      longDescription: 'Async PDF→JSON, Fargate-Spot deployment, $0.50/day active cost. Cost-optimized serverless workload.',
+      tags: ['AWS', 'Python', 'Terraform'],
+      category: 'Cloud',
+      github: 'https://github.com',
+      gradient: 'from-purple-500 to-pink-500',
+    },
+    {
+      title: 'cost-optimization-dashboard',
+      description: 'Lambda + Grafana cost tracking',
+      longDescription: 'Lambda scrapes CostExplorer, Grafana alerts, saved 40% sandbox spend. Real-time FinOps monitoring.',
+      tags: ['AWS', 'Python', 'Terraform'],
+      category: 'FinOps',
+      github: 'https://github.com',
+      gradient: 'from-green-500 to-emerald-500',
+      featured: true,
+    },
+    {
+      title: 'multi-account-aws-org',
+      description: 'Landing zone with SSO & SCPs',
+      longDescription: 'Landing-zone, SSO, SCPs, Budget alerts → 0 security audit findings. Enterprise AWS foundation.',
+      tags: ['AWS', 'Terraform'],
+      category: 'Cloud',
+      github: 'https://github.com',
+      gradient: 'from-yellow-500 to-amber-500',
+    },
+    {
+      title: 'ai-prompt-caching-layer',
+      description: 'ElastiCache + KIMI AI integration',
+      longDescription: 'ElastiCache + KIMI AI, 70% cost reduction, 1200+ AI calls/day. Smart caching for AI workloads.',
+      tags: ['AWS', 'Python', 'Terraform'],
+      category: 'AI/ML',
       github: 'https://github.com',
       gradient: 'from-indigo-500 to-violet-500',
+    },
+    {
+      title: 's3-cloudfront-static-site',
+      description: 'Terraform module for static sites',
+      longDescription: 'Terraform module, CI invalidation, Lighthouse 100% performance. Fast, secure static hosting.',
+      tags: ['AWS', 'Terraform'],
+      category: 'Cloud',
+      github: 'https://github.com',
+      gradient: 'from-blue-400 to-blue-600',
+    },
+    {
+      title: 'github-actions-reusable-workflows',
+      description: 'OIDC to AWS + security scans',
+      longDescription: 'OIDC to AWS, tflint, security-scan, used by 5 external repos. Reusable CI/CD patterns.',
+      tags: ['Terraform', 'AWS'],
+      category: 'DevOps',
+      github: 'https://github.com',
+      gradient: 'from-teal-500 to-cyan-500',
+    },
+    {
+      title: 'latex-resume-generator',
+      description: 'JSON → LaTeX → PDF microservice',
+      longDescription: 'JSON → LaTeX → PDF microservice; 2k unique downloads. Serverless document generation.',
+      tags: ['Python', 'AWS'],
+      category: 'Cloud',
+      github: 'https://github.com',
+      gradient: 'from-pink-500 to-rose-500',
     },
   ],
 }: ProjectsProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [visibleCount, setVisibleCount] = useState<number>(6);
+  const [initialVisibleCount, setInitialVisibleCount] = useState<number>(6);
+
+  // Determine initial counts based on viewport: 6 on md+ (>=768px), 3 on small screens
+  useEffect(() => {
+    const compute = () => {
+      if (typeof window === 'undefined') return 6;
+      const isMdUp = window.matchMedia('(min-width: 768px)').matches;
+      return isMdUp ? 6 : 3;
+    };
+    const update = () => {
+      setInitialVisibleCount(() => {
+        const next = compute();
+        // Reset visible count when screen size changes
+        return next;
+      });
+    };
+    // set on mount
+    setInitialVisibleCount(compute());
+    setVisibleCount(compute());
+    // update on resize
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   const categories = ['All', ...Array.from(new Set(projects.map((p) => p.category)))];
 
@@ -115,6 +163,15 @@ export default function Projects({
     selectedCategory === 'All'
       ? projects
       : projects.filter((p) => p.category === selectedCategory);
+
+  const visibleProjects = useMemo(() => {
+    return filteredProjects.slice(0, visibleCount);
+  }, [visibleCount, filteredProjects]);
+
+  // Reset visible count when category changes
+  useEffect(() => {
+    setVisibleCount(initialVisibleCount);
+  }, [selectedCategory, initialVisibleCount]);
 
   return (
     <Section id="projects" spacing="lg" containerSize="lg">
@@ -135,23 +192,21 @@ export default function Projects({
         {/* Category Filter */}
         <div className="flex flex-wrap justify-center gap-3">
           {categories.map((category) => (
-            <button
+            <Button
               key={category}
+              size="sm"
+              variant={selectedCategory === category ? 'primary' : 'ghost'}
+              className={`rounded-full ${selectedCategory === category ? 'shadow-lg scale-105' : 'text-foreground/70 hover:text-foreground hover:scale-105'}`}
               onClick={() => setSelectedCategory(category)}
-              className={`relative px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
-                selectedCategory === category
-                  ? 'bg-foreground text-background shadow-lg scale-105'
-                  : 'bg-foreground/5 text-foreground/70 hover:bg-foreground/10 hover:text-foreground hover:scale-105'
-              }`}
             >
               {category}
-            </button>
+            </Button>
           ))}
         </div>
 
         {/* Projects Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProjects.map((project, index) => (
+          {visibleProjects.map((project, index) => (
             <div
               key={index}
               className="group relative overflow-hidden rounded-3xl transition-all duration-500 hover:scale-[1.03]"
@@ -191,23 +246,30 @@ export default function Projects({
                 </div>
 
                 <div className="flex gap-3">
-                  {project.link && (
-                    <button
-                      onClick={() => window.open(project.link, '_blank')}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-foreground text-background hover:scale-105 transition-transform font-semibold text-sm"
-                    >
-                      <FaExternalLinkAlt className="text-xs" />
-                      Demo
-                    </button>
-                  )}
+                  {(() => {
+                    const demoUrl = project.link ?? project.github;
+                    return (
+                      <Button
+                        onClick={() => demoUrl && window.open(demoUrl, '_blank')}
+                        size="sm"
+                        className="flex-1 rounded-xl gap-2"
+                        disabled={!demoUrl}
+                        title={demoUrl ? 'Open Demo' : 'No demo available'}
+                      >
+                        <FaExternalLinkAlt className="text-xs" />
+                        Demo
+                      </Button>
+                    );
+                  })()}
                   {project.github && (
-                    <button
-                      onClick={() => window.open(project.github, '_blank')}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-foreground/20 hover:bg-foreground/5 hover:scale-105 transition-all font-semibold text-sm"
+                    <Button
+                      onClick={() => window.open(project.github!, '_blank')}
+                      size="sm"
+                      className="flex-1 rounded-xl gap-2 border border-foreground/20 hover:scale-105"
                     >
                       <FaGithub />
                       Code
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -222,6 +284,30 @@ export default function Projects({
             <p className="text-xl text-foreground/50">
               No projects found in this category
             </p>
+          </div>
+        )}
+
+        {/* More Button */}
+        {visibleCount < filteredProjects.length && (
+          <div className="flex justify-center gap-4">
+            <Button 
+              onClick={() => setVisibleCount(prev => Math.min(prev + 6, filteredProjects.length))} 
+              className="rounded-xl"
+            >
+              Show More
+            </Button>
+          </div>
+        )}
+
+        {/* Show Less Button */}
+        {visibleCount > initialVisibleCount && (
+          <div className="flex justify-center gap-4">
+            <Button 
+              onClick={() => setVisibleCount(initialVisibleCount)} 
+              className="rounded-xl"
+            >
+              Show Less
+            </Button>
           </div>
         )}
       </div>

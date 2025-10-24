@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Button } from '@/components';
 
 interface NavLink {
   label: string;
@@ -163,7 +164,9 @@ const Header: React.FC<HeaderProps> = ({
         </ul>
 
         {/* Mobile Menu Button */}
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           className="mobile-menu-button"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="Toggle menu"
@@ -173,7 +176,7 @@ const Header: React.FC<HeaderProps> = ({
             <span></span>
             <span></span>
           </div>
-        </button>
+        </Button>
       </nav>
 
       {/* Mobile Menu Backdrop */}

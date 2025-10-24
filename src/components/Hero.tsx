@@ -188,7 +188,7 @@ export default function Hero({
                 {/* Professional status indicator */}
                 <div className="absolute bottom-2 right-2 z-20 flex items-center gap-1.5 bg-gradient-to-r from-green-400 to-emerald-500 px-3 py-1.5 rounded-full shadow-lg border-2 border-white/80 backdrop-blur-sm">
                   <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                  <span className="text-xs font-semibold text-white hidden sm:inline">Available</span>
+                  <span className="text-xs font-semibold text-white hidden sm:inline">OpenToWork</span>
                 </div>
               </div>
             </div>

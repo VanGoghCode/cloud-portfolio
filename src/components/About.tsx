@@ -23,27 +23,27 @@ interface AboutProps {
 }
 
 export default function About({
-  bio = "I'm a passionate Cloud Developer and Designer with a keen eye for creating elegant, efficient solutions. My journey in tech has been driven by curiosity and a desire to build meaningful digital experiences that make a difference.",
+  bio = "With three years of hands-on cloud experience, I design and operate AWS-native platforms, multi-account organizations, EKS clusters, serverless pipelines 100 % codified in Terraform, averaging ≤ $3 daily cost and cutting AI workloads 70 % via ElastiCache caching; AWS SAA (Nov 2025) and CKAD (Jan 2026), lots of GitHub commits, Go/Python micro-services ≤ 50 ms p99, full-stack Next.js when needed, and observability stacks that recover in seconds.",
   skills = [
     { name: 'AWS', icon: <FaAws />, color: '#FF9900' },
     { name: 'Azure', icon: <FaMicrosoft />, color: '#0078D4' },
     { name: 'Google Cloud', icon: <SiGooglecloud />, color: '#4285F4' },
-    { name: 'React', icon: <FaReact />, color: '#61DAFB' },
-    { name: 'Next.js', icon: <SiNextdotjs />, color: '#000000' },
-    { name: 'TypeScript', icon: <SiTypescript />, color: '#3178C6' },
-    { name: 'Node.js', icon: <FaNodeJs />, color: '#339933' },
-    { name: 'Python', icon: <FaPython />, color: '#3776AB' },
     { name: 'Docker', icon: <FaDocker />, color: '#2496ED' },
     { name: 'Kubernetes', icon: <SiKubernetes />, color: '#326CE5' },
     { name: 'Terraform', icon: <SiTerraform />, color: '#7B42BC' },
+    { name: 'Python', icon: <FaPython />, color: '#3776AB' },
+    { name: 'Node.js', icon: <FaNodeJs />, color: '#339933' },
+    { name: 'React', icon: <FaReact />, color: '#61DAFB' },
+    { name: 'Next.js', icon: <SiNextdotjs />, color: '#000000' },
+    { name: 'TypeScript', icon: <SiTypescript />, color: '#3178C6' },
     { name: 'MongoDB', icon: <SiMongodb />, color: '#47A248' },
   ],
 }: AboutProps) {
   const stats = [
-    { label: 'Years Experience', value: '5+', icon: <MdCode /> },
-    { label: 'Projects Completed', value: '50+', icon: <MdLightbulb /> },
-    { label: 'Cloud Solutions', value: '30+', icon: <MdCloud /> },
-    { label: 'Performance Boost', value: '60%', icon: <MdSpeed /> },
+    { label: 'OSS Repos', value: '10', icon: <MdCode /> },
+    { label: 'GitHub Contributions', value: '650+', icon: <MdLightbulb /> },
+    { label: 'Cloud Spend Saved', value: '$3k+', icon: <MdCloud /> },
+    { label: 'Certifications', value: '2', icon: <MdSpeed /> },
   ];
 
   return (
@@ -146,39 +146,39 @@ export default function About({
             {[
               {
                 title: 'Cloud Architecture',
-                description: 'Design and implement scalable, secure cloud infrastructure using AWS, Azure, and GCP.',
+                description: 'Multi-account AWS, Well-Architected pillars, infra-cost ≤$5/day. Design scalable, secure infrastructure.',
                 icon: '☁️',
                 gradient: 'from-blue-500/10 to-cyan-500/10',
               },
               {
-                title: 'Full Stack Development',
-                description: 'Build modern web applications with React, Next.js, and Node.js from concept to deployment.',
-                icon: '💻',
-                gradient: 'from-purple-500/10 to-pink-500/10',
-              },
-              {
-                title: 'DevOps & Automation',
-                description: 'Streamline development workflows with CI/CD pipelines, Docker, and Kubernetes.',
+                title: 'DevOps & GitOps',
+                description: 'Zero-click pipelines, PR→Prod in <10 min, 100% IaC. ArgoCD, GitHub Actions, Terraform automation.',
                 icon: '⚙️',
                 gradient: 'from-orange-500/10 to-red-500/10',
               },
               {
-                title: 'UI/UX Design',
-                description: 'Create beautiful, intuitive interfaces that users love with modern design principles.',
-                icon: '🎨',
+                title: 'Security & Compliance',
+                description: 'IAM least-privilege, KMS, Secrets rotation, SCPs, Config rules. Zero security audit findings.',
+                icon: '🔒',
+                gradient: 'from-purple-500/10 to-pink-500/10',
+              },
+              {
+                title: 'Observability & FinOps',
+                description: 'Prometheus, Grafana, real-time cost dashboards, 70% waste cut. Monitor everything, optimize spend.',
+                icon: '📊',
                 gradient: 'from-green-500/10 to-emerald-500/10',
               },
               {
-                title: 'Performance Optimization',
-                description: 'Optimize applications for speed, efficiency, and scalability using best practices.',
-                icon: '⚡',
-                gradient: 'from-yellow-500/10 to-amber-500/10',
-              },
-              {
-                title: 'Consulting',
-                description: 'Provide technical guidance and strategic planning for digital transformation projects.',
+                title: 'Platform Engineering',
+                description: 'Reusable TF modules, Helm charts, docs-as-code, developer portals. Build platforms teams love.',
                 icon: '🚀',
                 gradient: 'from-indigo-500/10 to-violet-500/10',
+              },
+              {
+                title: 'UX Polish',
+                description: 'Clean dashboards, dark-mode, 40% faster page loads (SSR + edge). Engineering that feels good.',
+                icon: '🎨',
+                gradient: 'from-yellow-500/10 to-amber-500/10',
               },
             ].map((item, index) => (
               <div
