@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Section, Button } from '@/components';
 import { FaExternalLinkAlt, FaGithub } from 'react-icons/fa';
+import { useInView } from '@/hooks/useInView';
 import { 
   SiReact, SiNextdotjs, SiTypescript, SiTailwindcss, 
   SiNodedotjs, SiMongodb, SiPostgresql, SiDocker,
@@ -42,6 +43,83 @@ const techIcons: Record<string, React.ReactNode> = {
   'TensorFlow': <SiTensorflow />,
   'Terraform': <SiTerraform />,
 };
+
+// Individual Project Card Component with Intersection Observer
+function ProjectCard({ project, index }: { project: Project; index: number }) {
+  const { ref, isInView } = useInView({ threshold: 0.1, triggerOnce: true });
+
+  return (
+    <div
+      ref={ref}
+      className="group relative overflow-hidden rounded-3xl transition-all duration-500 hover:scale-[1.03]"
+      style={{
+        opacity: isInView ? 1 : 0,
+        transform: isInView ? 'translateY(0)' : 'translateY(30px)',
+        transition: `opacity 0.6s ease-out ${index * 0.1}s, transform 0.6s ease-out ${index * 0.1}s`,
+        background: 'rgba(255, 255, 255, 0.4)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+      }}
+    >
+      {/* Gradient Background */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${project.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-500`}></div>
+      
+      <div className="relative z-10 p-8 h-full flex flex-col">
+        <div className="inline-flex items-center gap-2 w-fit px-3 py-1 rounded-full bg-foreground/10 text-xs font-semibold mb-4">
+          <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${project.gradient}`}></div>
+          {project.category}
+        </div>
+
+        <h4 className="text-xl font-bold mb-3">{project.title}</h4>
+        <p className="text-sm text-foreground/60 mb-4">{project.description}</p>
+        <p className="text-foreground/70 leading-relaxed mb-6 flex-grow text-sm">
+          {project.longDescription}
+        </p>
+
+        <div className="flex flex-wrap gap-2 mb-6">
+          {project.tags.slice(0, 4).map((tag, tagIndex) => (
+            <span
+              key={tagIndex}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-foreground/5 text-xs font-medium"
+            >
+              {techIcons[tag] && <span className="text-sm">{techIcons[tag]}</span>}
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        <div className="flex gap-3">
+          {(() => {
+            const demoUrl = project.link ?? project.github;
+            return (
+              <Button
+                onClick={() => demoUrl && window.open(demoUrl, '_blank')}
+                size="sm"
+                className="flex-1 rounded-xl gap-2"
+                disabled={!demoUrl}
+                title={demoUrl ? 'Open Demo' : 'No demo available'}
+              >
+                <FaExternalLinkAlt className="text-xs" />
+                Demo
+              </Button>
+            );
+          })()}
+          {project.github && (
+            <Button
+              onClick={() => window.open(project.github!, '_blank')}
+              size="sm"
+              className="flex-1 rounded-xl gap-2 border border-foreground/20 hover:scale-105"
+            >
+              <FaGithub />
+              Code
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Projects({
   projects = [
@@ -206,75 +284,9 @@ export default function Projects({
 
         {/* Projects Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {visibleProjects.map((project, index) => (
-            <div
-              key={index}
-              className="group relative overflow-hidden rounded-3xl transition-all duration-500 hover:scale-[1.03]"
-              style={{
-                animation: `fadeInUp 0.6s ease-out ${index * 0.1}s both`,
-                background: 'rgba(255, 255, 255, 0.4)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-              }}
-            >
-              {/* Gradient Background */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${project.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-500`}></div>
-              
-              <div className="relative z-10 p-8 h-full flex flex-col">
-                <div className="inline-flex items-center gap-2 w-fit px-3 py-1 rounded-full bg-foreground/10 text-xs font-semibold mb-4">
-                  <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${project.gradient}`}></div>
-                  {project.category}
-                </div>
-
-                <h4 className="text-xl font-bold mb-3">{project.title}</h4>
-                <p className="text-sm text-foreground/60 mb-4">{project.description}</p>
-                <p className="text-foreground/70 leading-relaxed mb-6 flex-grow text-sm">
-                  {project.longDescription}
-                </p>
-
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {project.tags.slice(0, 4).map((tag, tagIndex) => (
-                    <span
-                      key={tagIndex}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-foreground/5 text-xs font-medium"
-                    >
-                      {techIcons[tag] && <span className="text-sm">{techIcons[tag]}</span>}
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="flex gap-3">
-                  {(() => {
-                    const demoUrl = project.link ?? project.github;
-                    return (
-                      <Button
-                        onClick={() => demoUrl && window.open(demoUrl, '_blank')}
-                        size="sm"
-                        className="flex-1 rounded-xl gap-2"
-                        disabled={!demoUrl}
-                        title={demoUrl ? 'Open Demo' : 'No demo available'}
-                      >
-                        <FaExternalLinkAlt className="text-xs" />
-                        Demo
-                      </Button>
-                    );
-                  })()}
-                  {project.github && (
-                    <Button
-                      onClick={() => window.open(project.github!, '_blank')}
-                      size="sm"
-                      className="flex-1 rounded-xl gap-2 border border-foreground/20 hover:scale-105"
-                    >
-                      <FaGithub />
-                      Code
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+          {visibleProjects.map((project, index) => {
+            return <ProjectCard key={index} project={project} index={index} />;
+          })}
         </div>
 
         {/* Empty State */}
@@ -311,23 +323,6 @@ export default function Projects({
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .group:hover {
-          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
-        }
-      `}</style>
     </Section>
   );
 }

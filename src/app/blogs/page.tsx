@@ -1,11 +1,26 @@
 import React from "react";
 import { Section } from "@/components";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Blogs | Kirtankumar [K.K.]",
+// Enhanced metadata for the blogs page
+export const metadata: Metadata = {
+  title: "Blogs",
   description:
-    "Thoughts, notes, and write-ups on cloud, web, and developer experience.",
+    "Thoughts, notes, and write-ups on cloud, web, and developer experience. Explore articles about cloud-native architecture, Next.js, and modern web development.",
+  openGraph: {
+    title: "Blogs | Kirtankumar [K.K.]",
+    description: "Technical articles on cloud architecture, frontend development, and DevOps best practices.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Blogs | Kirtankumar [K.K.]",
+    description: "Technical articles on cloud architecture and web development.",
+  },
 };
+
+// Note: This is a Server Component by default in Next.js 15
+// ISR can be configured in next.config.ts or per route if needed
 
 export default function BlogPage() {
   const posts = [

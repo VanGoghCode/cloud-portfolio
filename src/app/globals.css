@@ -1,3 +1,4 @@
+/* Optimized font loading - preconnect added in layout.tsx */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import "tailwindcss";
 
@@ -17,12 +18,24 @@
   }
 }
 
+/* Smooth scrolling optimization */
+html {
+  scroll-behavior: smooth;
+  /* Enable hardware acceleration for smoother scrolling */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
+}
+
 body {
   position: relative;
   background: #FAFAFA;
   color: var(--foreground);
   font-family: 'Poppins', sans-serif;
   min-height: 100vh;
+  /* Optimize scrolling performance */
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Top white-ish gradient overlay for modern scroll effect */
@@ -51,12 +64,18 @@ body::after {
   z-index: 999;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  /* Scroll performance optimization */
+  will-change: opacity;
+  transform: translateZ(0);
+  contain: layout style paint;
 }
 
 /* Ensure sections are in the correct stacking context */
 section {
   position: relative;
   z-index: 1;
+  /* Improve scroll performance with containment */
+  contain: layout style paint;
 }
 
 body::before {
@@ -75,6 +94,12 @@ body::before {
   z-index: 0;
   animation: moveBackground 60s linear infinite;
   will-change: background-position;
+  /* GPU acceleration for smooth scrolling */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  /* CSS containment for better scroll performance */
+  contain: strict;
 }
 
 @keyframes moveBackground {
@@ -87,29 +112,29 @@ body::before {
   }
 }
 
-/* Floating animation for cloud icon */
+/* Floating animation for cloud icon - GPU accelerated */
 @keyframes float {
 
   0%,
   100% {
-    transform: translateY(0px);
+    transform: translateY(0px) translateZ(0);
   }
 
   50% {
-    transform: translateY(-20px);
+    transform: translateY(-20px) translateZ(0);
   }
 }
 
-/* Gentle rotation animation */
+/* Gentle rotation animation - GPU accelerated */
 @keyframes floatRotate {
 
   0%,
   100% {
-    transform: translateY(0px) rotate(0deg);
+    transform: translateY(0px) rotate(0deg) translateZ(0);
   }
 
   50% {
-    transform: translateY(-20px) rotate(3deg);
+    transform: translateY(-20px) rotate(3deg) translateZ(0);
   }
 }
 
@@ -126,19 +151,19 @@ body::before {
   }
 }
 
-/* Slow floating animation for tech icons */
+/* Slow floating animation for tech icons - GPU accelerated */
 @keyframes slowFloat {
   0%, 100% {
-    transform: translateY(0px) translateX(0px) rotate(0deg);
+    transform: translateY(0px) translateX(0px) rotate(0deg) translateZ(0);
   }
   25% {
-    transform: translateY(-15px) translateX(10px) rotate(5deg);
+    transform: translateY(-15px) translateX(10px) rotate(5deg) translateZ(0);
   }
   50% {
-    transform: translateY(-25px) translateX(-5px) rotate(-3deg);
+    transform: translateY(-25px) translateX(-5px) rotate(-3deg) translateZ(0);
   }
   75% {
-    transform: translateY(-10px) translateX(8px) rotate(3deg);
+    transform: translateY(-10px) translateX(8px) rotate(3deg) translateZ(0);
   }
 }
 
@@ -1115,4 +1140,59 @@ h1, h2 {
 ::-moz-selection {
   background: var(--foreground);
   color: #FAFAFA;
+}
+
+/* ====================================
+   HIGH-PERFORMANCE SCROLL OPTIMIZATIONS
+   ==================================== */
+
+/* Force GPU acceleration on all animated/transformed elements */
+.floating-tech-icons,
+.floating-cloud-motto,
+.hero-container,
+.profile-image-wrapper,
+.motto-section,
+[class*="animate-"],
+[class*="transition-"] {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+/* Optimize images for scroll performance */
+img,
+picture,
+video {
+  transform: translateZ(0);
+  will-change: auto;
+}
+
+/* Optimize cards and interactive elements */
+.minimal-card,
+.card-hover,
+article {
+  contain: layout style paint;
+  content-visibility: auto;
+}
+
+/* Passive event listeners hint for better scroll performance */
+* {
+  touch-action: manipulation;
+}
+
+/* Reduce paint complexity during scroll */
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Force compositing for better performance */
+main,
+header,
+footer {
+  transform: translateZ(0);
+  will-change: auto;
 }

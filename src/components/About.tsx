@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Section } from '@/components';
+import { useInView } from '@/hooks/useInView';
 import { 
   FaAws, FaMicrosoft, FaReact, FaNodeJs, FaPython, FaDocker 
 } from 'react-icons/fa';
@@ -20,6 +21,110 @@ interface Skill {
 interface AboutProps {
   bio?: string;
   skills?: Skill[];
+}
+
+// Animated Stat Card Component
+function StatCard({ stat, index }: { stat: { label: string; value: string; icon: React.ReactNode }; index: number }) {
+  const { ref, isInView } = useInView({ threshold: 0.1, triggerOnce: true });
+
+  return (
+    <div
+      ref={ref}
+      className="group relative overflow-hidden bg-gradient-to-br from-foreground/5 to-foreground/10 backdrop-blur-sm rounded-2xl p-6 sm:p-8 transition-all duration-500 hover:scale-105 hover:shadow-lg"
+      style={{
+        opacity: isInView ? 1 : 0,
+        transform: isInView ? 'translateY(0)' : 'translateY(20px)',
+        transition: `opacity 0.5s ease-out ${index * 0.1}s, transform 0.5s ease-out ${index * 0.1}s`,
+        background: 'rgba(255, 255, 255, 0.4)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+      }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-foreground/0 to-foreground/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <div className="relative z-10 text-center space-y-3">
+        <div className="text-4xl sm:text-5xl mx-auto w-fit p-3 rounded-xl bg-foreground/10 text-foreground group-hover:scale-110 transition-transform duration-300">
+          {stat.icon}
+        </div>
+        <div className="text-3xl sm:text-4xl font-bold text-foreground" style={{ color: 'var(--foreground)' }}>
+          {stat.value}
+        </div>
+        <div className="text-sm sm:text-base text-foreground/60 font-medium">
+          {stat.label}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Animated Skill Card Component
+function SkillCard({ skill, index }: { skill: Skill; index: number }) {
+  const { ref, isInView } = useInView({ threshold: 0.1, triggerOnce: true });
+
+  return (
+    <div
+      ref={ref}
+      className="group relative overflow-hidden backdrop-blur-sm rounded-2xl p-6 transition-all duration-300 hover:scale-110 hover:shadow-lg cursor-pointer"
+      style={{
+        opacity: isInView ? 1 : 0,
+        transform: isInView ? 'translateY(0)' : 'translateY(20px)',
+        transition: `opacity 0.5s ease-out ${index * 0.05}s, transform 0.5s ease-out ${index * 0.05}s`,
+        background: 'rgba(255, 255, 255, 0.4)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+      }}
+    >
+      {/* Glow effect on hover */}
+      <div 
+        className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl"
+        style={{ backgroundColor: skill.color }}
+      ></div>
+      
+      <div className="relative z-10 flex flex-col items-center gap-3">
+        <div 
+          className="text-4xl sm:text-5xl transition-all duration-300 group-hover:scale-125 group-hover:rotate-12"
+          style={{ color: skill.color }}
+        >
+          {skill.icon}
+        </div>
+        <span className="text-xs sm:text-sm font-semibold text-center text-foreground/80 group-hover:text-foreground transition-colors">
+          {skill.name}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Animated Service Card Component
+function ServiceCard({ item, index }: { item: { title: string; description: string; icon: string; gradient: string }; index: number }) {
+  const { ref, isInView } = useInView({ threshold: 0.1, triggerOnce: true });
+
+  return (
+    <div
+      ref={ref}
+      className={`group relative overflow-hidden backdrop-blur-sm rounded-3xl p-8 transition-all duration-500 hover:scale-105 hover:shadow-lg`}
+      style={{
+        opacity: isInView ? 1 : 0,
+        transform: isInView ? 'translateY(0)' : 'translateY(20px)',
+        transition: `opacity 0.5s ease-out ${index * 0.1}s, transform 0.5s ease-out ${index * 0.1}s`,
+        background: 'rgba(255, 255, 255, 0.4)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+      }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent to-foreground/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <div className="relative z-10 space-y-4">
+        <div className="text-5xl group-hover:scale-110 transition-transform duration-300">
+          {item.icon}
+        </div>
+        <h4 className="text-xl font-bold text-foreground group-hover:text-foreground transition-colors">
+          {item.title}
+        </h4>
+        <p className="text-foreground/70 leading-relaxed">
+          {item.description}
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export default function About({
@@ -65,28 +170,7 @@ export default function About({
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="group relative overflow-hidden bg-gradient-to-br from-foreground/5 to-foreground/10 backdrop-blur-sm rounded-2xl p-6 sm:p-8 transition-all duration-500 hover:scale-105 hover:shadow-lg"
-              style={{
-                background: 'rgba(255, 255, 255, 0.4)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-              }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-foreground/0 to-foreground/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 text-center space-y-3">
-                <div className="text-4xl sm:text-5xl mx-auto w-fit p-3 rounded-xl bg-foreground/10 text-foreground group-hover:scale-110 transition-transform duration-300">
-                  {stat.icon}
-                </div>
-                <div className="text-3xl sm:text-4xl font-bold text-foreground" style={{ color: 'var(--foreground)' }}>
-                  {stat.value}
-                </div>
-                <div className="text-sm sm:text-base text-foreground/60 font-medium">
-                  {stat.label}
-                </div>
-              </div>
-            </div>
+            <StatCard key={index} stat={stat} index={index} />
           ))}
         </div>
 
@@ -101,34 +185,7 @@ export default function About({
           
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {skills.map((skill, index) => (
-              <div
-                key={index}
-                className="group relative overflow-hidden backdrop-blur-sm rounded-2xl p-6 transition-all duration-300 hover:scale-110 hover:shadow-lg cursor-pointer"
-                style={{
-                  animation: `fadeInUp 0.5s ease-out ${index * 0.05}s both`,
-                  background: 'rgba(255, 255, 255, 0.4)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                }}
-              >
-                {/* Glow effect on hover */}
-                <div 
-                  className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl"
-                  style={{ backgroundColor: skill.color }}
-                ></div>
-                
-                <div className="relative z-10 flex flex-col items-center gap-3">
-                  <div 
-                    className="text-4xl sm:text-5xl transition-all duration-300 group-hover:scale-125 group-hover:rotate-12"
-                    style={{ color: skill.color }}
-                  >
-                    {skill.icon}
-                  </div>
-                  <span className="text-xs sm:text-sm font-semibold text-center text-foreground/80 group-hover:text-foreground transition-colors">
-                    {skill.name}
-                  </span>
-                </div>
-              </div>
+              <SkillCard key={index} skill={skill} index={index} />
             ))}
           </div>
         </div>
@@ -181,45 +238,11 @@ export default function About({
                 gradient: 'from-yellow-500/10 to-amber-500/10',
               },
             ].map((item, index) => (
-              <div
-                key={index}
-                className={`group relative overflow-hidden backdrop-blur-sm rounded-3xl p-8 transition-all duration-500 hover:scale-105 hover:shadow-lg`}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.4)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-transparent to-foreground/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative z-10 space-y-4">
-                  <div className="text-5xl group-hover:scale-110 transition-transform duration-300">
-                    {item.icon}
-                  </div>
-                  <h4 className="text-xl font-bold text-foreground group-hover:text-foreground transition-colors">
-                    {item.title}
-                  </h4>
-                  <p className="text-foreground/70 leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
-              </div>
+              <ServiceCard key={index} item={item} index={index} />
             ))}
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </Section>
   );
 }
