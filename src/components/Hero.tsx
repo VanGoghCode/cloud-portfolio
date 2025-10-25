@@ -177,7 +177,7 @@ export default function Hero({
                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/10 to-purple-500/10 animate-pulse"></div>
                 
                 <Image
-                  src="/profile.jpg"
+                  src="/profile.webp"
                   alt={name}
                   fill
                   sizes="(max-width: 640px) 160px, (max-width: 768px) 176px, (max-width: 1024px) 208px, 280px"

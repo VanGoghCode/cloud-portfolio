@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     siteName: "Kirtankumar Portfolio",
     images: [
       {
-        url: "/profile.jpg",
+        url: "/profile.webp",
         width: 1200,
         height: 630,
         alt: "Kirtankumar - Cloud & DevOps Engineer",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Kirtankumar [K.K.] | Cloud-Native & DevOps Engineer",
     description: "Cloud engineer specializing in AWS, Kubernetes, and scalable infrastructure.",
-    images: ["/profile.jpg"],
+    images: ["/profile.webp"],
     creator: "@vangoghcode", // Update with actual Twitter handle
   },
 

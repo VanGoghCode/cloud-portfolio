@@ -193,7 +193,7 @@ export default function Contact({
                     onChange={handleChange}
                     required
                     className="w-full px-5 py-4 bg-white/40 border border-white/20 rounded-xl placeholder:text-foreground/30 text-foreground font-medium transition-all duration-300 ease-out focus:outline-none focus:-translate-y-1 focus:shadow-xl focus:shadow-white-500/20 focus:bg-white/60 focus:border-white-500/20"
-                    placeholder="John Doe"
+                    placeholder="Your name "
                   />
                 </div>
 
@@ -212,7 +212,7 @@ export default function Contact({
                     onChange={handleChange}
                     required
                     className="w-full px-5 py-4 bg-white/40 border border-white/20 rounded-xl placeholder:text-foreground/30 text-foreground font-medium transition-all duration-300 ease-out focus:outline-none focus:-translate-y-1 focus:shadow-xl focus:shadow-white-500/20 focus:bg-white/60 focus:border-white-500/20"
-                    placeholder="john@example.com"
+                    placeholder="Your email address"
                   />
                 </div>
               </div>
