@@ -64,6 +64,15 @@ export async function submitContactForm(
       try {
         const error = await response.json();
         errorMessage = error.error || error.message || errorMessage;
+        
+        // Handle rate limiting with specific message
+        if (response.status === 429) {
+          const retryAfter = response.headers.get('Retry-After');
+          if (retryAfter) {
+            const minutes = Math.ceil(parseInt(retryAfter) / 60);
+            errorMessage = `Rate limit exceeded. Please try again in ${minutes} minute${minutes > 1 ? 's' : ''}.`;
+          }
+        }
       } catch {
         errorMessage = response.statusText || errorMessage;
       }

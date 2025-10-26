@@ -88,7 +88,7 @@ const Header: React.FC<HeaderProps> = ({
   // Active highlighting logic
   useEffect(() => {
     // On non-home pages, highlight by pathname (e.g., /blogs)
-    if (pathname !== '/') {
+    if (pathname && pathname !== '/') {
       if (pathname.startsWith('/blogs')) {
         setActiveSection('blogs');
       } else {
@@ -147,7 +147,7 @@ const Header: React.FC<HeaderProps> = ({
             const isRoute = !link.href.startsWith('#') && !link.href.startsWith('/#');
             const isActive = pathname === '/'
               ? sectionId ? activeSection === sectionId : false
-              : isRoute ? pathname.startsWith(link.href) : false;
+              : isRoute ? pathname?.startsWith(link.href) : false;
             return (
               <li key={index}>
                 <Link 
@@ -193,7 +193,7 @@ const Header: React.FC<HeaderProps> = ({
             const isRoute = !link.href.startsWith('#') && !link.href.startsWith('/#');
             const isActive = pathname === '/'
               ? sectionId ? activeSection === sectionId : false
-              : isRoute ? pathname.startsWith(link.href) : false;
+              : isRoute ? pathname?.startsWith(link.href) : false;
             return (
               <li key={index}>
                 <Link

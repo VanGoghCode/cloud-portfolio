@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
   // Production optimizations
   poweredByHeader: false, // Remove X-Powered-By header for security
   reactStrictMode: true,
+  
+  // Skip TypeScript and ESLint checks during build (checked separately)
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
 
   // Security headers
   async headers() {
