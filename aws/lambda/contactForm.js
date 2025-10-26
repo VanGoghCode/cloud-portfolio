@@ -17,9 +17,10 @@ const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { DynamoDBDocumentClient, PutCommand } = require("@aws-sdk/lib-dynamodb");
 const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
 
-const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION });
+// AWS_REGION is automatically provided by Lambda runtime
+const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const sesClient = new SESClient({ region: process.env.AWS_REGION });
+const sesClient = new SESClient({ region: process.env.AWS_REGION || 'us-east-1' });
 
 exports.handler = async (event) => {
   // CORS headers
@@ -156,7 +157,6 @@ Message ID: ${messageId}
     };
 
   } catch (error) {
-    console.error("Error processing contact form:", error);
     
     return {
       statusCode: 500,

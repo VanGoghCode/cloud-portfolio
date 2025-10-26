@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   keywords: ["Cloud Engineer", "DevOps", "AWS", "Kubernetes", "EKS", "Terraform", "Infrastructure as Code", "Software Developer"],
   authors: [{ name: "Kirtankumar Thummar" }],
   creator: "Kirtankumar Thummar",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://vctrx.cloud'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_API_ENDPOINT || 'https://vctrx.cloud'),
   
   // Open Graph tags for social sharing
   openGraph: {

@@ -1,210 +1,245 @@
-# AWS Portfolio Backend - Health Check Script
-
-Write-Host "🏥 AWS Portfolio Backend Health Check" -ForegroundColor Green -BackgroundColor Black
+Write-Host "AWS Portfolio Backend Health Check" -ForegroundColor Green -BackgroundColor Black
 Write-Host ""
 
-$errors = @()
-$warnings = @()
-$success = @()
+$script:SuccessItems = @()
+$script:WarningItems = @()
+$script:ErrorItems = @()
+$script:ApiEndpoint = $null
 
-# Check 1: AWS CLI
-Write-Host "Checking AWS CLI..." -ForegroundColor Cyan
-try {
-    $awsVersion = aws --version 2>&1
-    Write-Host "  ✅ AWS CLI installed: $awsVersion" -ForegroundColor Green
-    $success += "AWS CLI"
-} catch {
-    Write-Host "  ❌ AWS CLI not found" -ForegroundColor Red
-    $errors += "AWS CLI not installed"
-}
+function Write-Status {
+    param(
+        [ValidateSet('Success', 'Warning', 'Error')]
+        [string]$Level,
+        [string]$Message,
+        [string]$Summary = $Message
+    )
 
-# Check 2: AWS Credentials
-Write-Host "Checking AWS credentials..." -ForegroundColor Cyan
-try {
-    $accountId = aws sts get-caller-identity --query Account --output text 2>$null
-    if ($accountId) {
-        Write-Host "  ✅ AWS credentials configured (Account: $accountId)" -ForegroundColor Green
-        $success += "AWS Credentials"
-    } else {
-        Write-Host "  ❌ AWS credentials not configured" -ForegroundColor Red
-        $errors += "AWS credentials not configured"
+    switch ($Level) {
+        'Success' {
+            Write-Host "  $Message" -ForegroundColor Green
+            $script:SuccessItems += $Summary
+        }
+        'Warning' {
+            Write-Host "  $Message" -ForegroundColor Yellow
+            $script:WarningItems += $Summary
+        }
+        'Error' {
+            Write-Host "  $Message" -ForegroundColor Red
+            $script:ErrorItems += $Summary
+        }
     }
-} catch {
-    Write-Host "  ❌ Cannot verify AWS credentials" -ForegroundColor Red
-    $errors += "Cannot verify AWS credentials"
 }
 
-# Check 3: DynamoDB Tables
-Write-Host "Checking DynamoDB tables..." -ForegroundColor Cyan
-$tables = @("portfolio-contact-messages", "portfolio-blog-posts")
-foreach ($table in $tables) {
+function Invoke-Check {
+    param(
+        [string]$Name,
+        [scriptblock]$Action
+    )
+
+    Write-Host "Checking $Name..." -ForegroundColor Cyan
+    & $Action
+}
+
+Invoke-Check -Name "AWS CLI" -Action {
     try {
-        $tableInfo = aws dynamodb describe-table --table-name $table --query 'Table.TableStatus' --output text 2>$null
-        if ($tableInfo -eq "ACTIVE") {
-            Write-Host "  ✅ Table '$table' exists and is active" -ForegroundColor Green
-            $success += "DynamoDB: $table"
+        $awsVersion = aws --version 2>&1
+        if ($LASTEXITCODE -eq 0 -and $awsVersion) {
+            Write-Status -Level Success -Message "AWS CLI installed: $awsVersion" -Summary "AWS CLI"
         } else {
-            Write-Host "  ⚠️  Table '$table' exists but status: $tableInfo" -ForegroundColor Yellow
-            $warnings += "DynamoDB table '$table' not active"
+            Write-Status -Level Error -Message "AWS CLI not found" -Summary "AWS CLI not installed"
         }
     } catch {
-        Write-Host "  ❌ Table '$table' not found" -ForegroundColor Red
-        $errors += "DynamoDB table '$table' not found"
+        Write-Status -Level Error -Message "AWS CLI not found" -Summary "AWS CLI not installed"
     }
 }
 
-# Check 4: Lambda Functions
-Write-Host "Checking Lambda functions..." -ForegroundColor Cyan
-$functions = @("portfolio-contact-form", "portfolio-blogs-crud")
-foreach ($function in $functions) {
+Invoke-Check -Name "AWS credentials" -Action {
     try {
-        $funcInfo = aws lambda get-function --function-name $function --query 'Configuration.State' --output text 2>$null
-        if ($funcInfo -eq "Active") {
-            Write-Host "  ✅ Function '$function' exists and is active" -ForegroundColor Green
-            $success += "Lambda: $function"
+        $accountId = aws sts get-caller-identity --query Account --output text 2>$null
+        if ($LASTEXITCODE -eq 0 -and $accountId) {
+            Write-Status -Level Success -Message "AWS credentials configured (Account: $accountId)" -Summary "AWS Credentials"
         } else {
-            Write-Host "  ⚠️  Function '$function' exists but status: $funcInfo" -ForegroundColor Yellow
-            $warnings += "Lambda function '$function' not active"
+            Write-Status -Level Error -Message "AWS credentials not configured" -Summary "AWS credentials not configured"
         }
     } catch {
-        Write-Host "  ❌ Function '$function' not found" -ForegroundColor Red
-        $errors += "Lambda function '$function' not found"
+        Write-Status -Level Error -Message "Cannot verify AWS credentials" -Summary "Cannot verify AWS credentials"
     }
 }
 
-# Check 5: API Gateway
-Write-Host "Checking API Gateway..." -ForegroundColor Cyan
-try {
-    $apiId = aws apigateway get-rest-apis --query "items[?name=='Portfolio API'].id" --output text 2>$null
-    if ($apiId) {
-        Write-Host "  ✅ API Gateway 'Portfolio API' found (ID: $apiId)" -ForegroundColor Green
-        $apiEndpoint = "https://$apiId.execute-api.us-east-1.amazonaws.com/prod"
-        Write-Host "     Endpoint: $apiEndpoint" -ForegroundColor Gray
-        $success += "API Gateway"
-    } else {
-        Write-Host "  ❌ API Gateway 'Portfolio API' not found" -ForegroundColor Red
-        $errors += "API Gateway not found"
-    }
-} catch {
-    Write-Host "  ❌ Cannot check API Gateway" -ForegroundColor Red
-    $errors += "Cannot check API Gateway"
-}
-
-# Check 6: SES Email
-Write-Host "Checking SES email verification..." -ForegroundColor Cyan
-try {
-    $verifiedEmails = aws ses list-verified-email-addresses --query 'VerifiedEmailAddresses' --output json 2>$null | ConvertFrom-Json
-    if ($verifiedEmails.Count -gt 0) {
-        Write-Host "  ✅ SES has $($verifiedEmails.Count) verified email(s):" -ForegroundColor Green
-        foreach ($email in $verifiedEmails) {
-            Write-Host "     - $email" -ForegroundColor Gray
+Invoke-Check -Name "DynamoDB tables" -Action {
+    $tables = @('portfolio-contact-messages', 'portfolio-blog-posts')
+    foreach ($table in $tables) {
+        try {
+            $status = aws dynamodb describe-table --table-name $table --query 'Table.TableStatus' --output text 2>$null
+            if ($LASTEXITCODE -eq 0 -and $status -eq 'ACTIVE') {
+                Write-Status -Level Success -Message "Table '$table' exists and is active" -Summary "DynamoDB: $table"
+            } elseif ($status) {
+                Write-Status -Level Warning -Message "Table '$table' exists but status: $status" -Summary "DynamoDB table '$table' not active"
+            } else {
+                Write-Status -Level Error -Message "Table '$table' not found" -Summary "DynamoDB table '$table' not found"
+            }
+        } catch {
+            Write-Status -Level Error -Message "Table '$table' not found" -Summary "DynamoDB table '$table' not found"
         }
-        $success += "SES Email"
-    } else {
-        Write-Host "  ⚠️  No verified emails found in SES" -ForegroundColor Yellow
-        $warnings += "No verified SES emails"
     }
-} catch {
-    Write-Host "  ❌ Cannot check SES" -ForegroundColor Red
-    $errors += "Cannot check SES"
 }
 
-# Check 7: Environment File
-Write-Host "Checking environment configuration..." -ForegroundColor Cyan
-if (Test-Path ".env.local") {
-    $envContent = Get-Content ".env.local" -Raw
-    if ($envContent -match "NEXT_PUBLIC_API_ENDPOINT") {
-        Write-Host "  ✅ .env.local exists with API endpoint" -ForegroundColor Green
-        $success += ".env.local"
-    } else {
-        Write-Host "  ⚠️  .env.local exists but missing API endpoint" -ForegroundColor Yellow
-        $warnings += ".env.local missing API endpoint"
+Invoke-Check -Name "Lambda functions" -Action {
+    $functions = @('portfolio-contact-form', 'portfolio-blogs-crud')
+    foreach ($function in $functions) {
+        try {
+            $state = aws lambda get-function --function-name $function --query 'Configuration.State' --output text 2>$null
+            if ($LASTEXITCODE -eq 0 -and $state -eq 'Active') {
+                Write-Status -Level Success -Message "Function '$function' exists and is active" -Summary "Lambda: $function"
+            } elseif ($state) {
+                Write-Status -Level Warning -Message "Function '$function' exists but status: $state" -Summary "Lambda function '$function' not active"
+            } else {
+                Write-Status -Level Error -Message "Function '$function' not found" -Summary "Lambda function '$function' not found"
+            }
+        } catch {
+            Write-Status -Level Error -Message "Function '$function' not found" -Summary "Lambda function '$function' not found"
+        }
     }
-} else {
-    Write-Host "  ⚠️  .env.local not found" -ForegroundColor Yellow
-    $warnings += ".env.local not found"
 }
 
-# Check 8: Node Modules (Lambda)
-Write-Host "Checking Lambda dependencies..." -ForegroundColor Cyan
-if (Test-Path "aws\lambda\node_modules") {
-    Write-Host "  ✅ Lambda node_modules exist" -ForegroundColor Green
-    $success += "Lambda dependencies"
-} else {
-    Write-Host "  ⚠️  Lambda node_modules not found (run: cd aws\lambda; npm install)" -ForegroundColor Yellow
-    $warnings += "Lambda dependencies not installed"
+Invoke-Check -Name "API Gateway" -Action {
+    try {
+        $apiId = aws apigateway get-rest-apis --query "items[?name=='Portfolio API'].id" --output text 2>$null
+        if ($LASTEXITCODE -eq 0 -and $apiId) {
+            $script:ApiEndpoint = "https://$apiId.execute-api.us-east-1.amazonaws.com/prod"
+            Write-Status -Level Success -Message "API Gateway 'Portfolio API' found (ID: $apiId)" -Summary "API Gateway"
+            Write-Host "     Endpoint: $($script:ApiEndpoint)" -ForegroundColor Gray
+        } else {
+            Write-Status -Level Error -Message "API Gateway 'Portfolio API' not found" -Summary "API Gateway not found"
+        }
+    } catch {
+        Write-Status -Level Error -Message "Cannot check API Gateway" -Summary "Cannot check API Gateway"
+    }
 }
 
-# Summary
+Invoke-Check -Name "SES email verification" -Action {
+    try {
+        # SES v2: list email identities and check their verification status
+        $emails = aws sesv2 list-email-identities --query "EmailIdentities[?IdentityType=='EMAIL_ADDRESS'].IdentityName" --output json 2>$null | ConvertFrom-Json
+        if ($LASTEXITCODE -ne 0) { throw "SESv2 list-email-identities failed." }
+
+        if (-not $emails -or $emails.Count -eq 0) {
+            Write-Status -Level Warning -Message "No SES email identities found" -Summary "No SES identities"
+            return
+        }
+
+        $verified = @()
+        foreach ($e in $emails) {
+            $status = aws sesv2 get-email-identity --email-identity $e --query "VerificationStatus" --output text 2>$null
+            if ($LASTEXITCODE -ne 0) { continue }
+            if ($status -eq 'SUCCESS') { $verified += $e }
+        }
+
+        if ($verified.Count -gt 0) {
+            Write-Status -Level Success -Message "SES has $($verified.Count) verified email(s):" -Summary "SES Email"
+            foreach ($email in $verified) { Write-Host "     - $email" -ForegroundColor Gray }
+        } else {
+            Write-Status -Level Warning -Message "No verified emails found in SES" -Summary "No verified SES emails"
+        }
+    } catch {
+        Write-Status -Level Error -Message "Cannot check SES" -Summary "Cannot check SES"
+    }
+}
+
+Invoke-Check -Name "Environment configuration" -Action {
+    if (Test-Path '.env') {
+        $envContent = Get-Content '.env' -Raw
+        if ($envContent -match 'NEXT_PUBLIC_API_ENDPOINT') {
+            Write-Status -Level Success -Message ".env exists with API endpoint" -Summary ".env"
+        } else {
+            Write-Status -Level Warning -Message ".env exists but missing API endpoint" -Summary ".env missing API endpoint"
+        }
+    } else {
+        Write-Status -Level Warning -Message ".env not found" -Summary ".env not found"
+    }
+}
+
+Invoke-Check -Name "Lambda dependencies" -Action {
+    if (Test-Path 'aws\lambda\node_modules') {
+        Write-Status -Level Success -Message "Lambda node_modules exist" -Summary "Lambda dependencies"
+    } else {
+        Write-Status -Level Warning -Message "Lambda node_modules not found (run: cd aws\\lambda; npm install)" -Summary "Lambda dependencies not installed"
+    }
+}
+
 Write-Host ""
-Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host ""
 Write-Host "                      HEALTH CHECK SUMMARY                  " -ForegroundColor White -BackgroundColor DarkCyan
-Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host ""
 Write-Host ""
 
-if ($success.Count -gt 0) {
-    Write-Host "✅ Successful Checks ($($success.Count)):" -ForegroundColor Green
-    foreach ($item in $success) {
-        Write-Host "   • $item" -ForegroundColor Gray
+if ($SuccessItems.Count -gt 0) {
+    Write-Host "Successful Checks ($($SuccessItems.Count)):" -ForegroundColor Green
+    foreach ($item in $SuccessItems) {
+        Write-Host "$item" -ForegroundColor Gray
     }
     Write-Host ""
 }
 
-if ($warnings.Count -gt 0) {
-    Write-Host "⚠️  Warnings ($($warnings.Count)):" -ForegroundColor Yellow
-    foreach ($item in $warnings) {
-        Write-Host "   • $item" -ForegroundColor Gray
+if ($WarningItems.Count -gt 0) {
+    Write-Host "Warnings ($($WarningItems.Count)):" -ForegroundColor Yellow
+    foreach ($item in $WarningItems) {
+        Write-Host "$item" -ForegroundColor Gray
     }
     Write-Host ""
 }
 
-if ($errors.Count -gt 0) {
-    Write-Host "❌ Errors ($($errors.Count)):" -ForegroundColor Red
-    foreach ($item in $errors) {
-        Write-Host "   • $item" -ForegroundColor Gray
+if ($ErrorItems.Count -gt 0) {
+    Write-Host "Errors ($($ErrorItems.Count)):" -ForegroundColor Red
+    foreach ($item in $ErrorItems) {
+        Write-Host "$item" -ForegroundColor Gray
     }
     Write-Host ""
 }
 
-# Overall Status
-Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
-if ($errors.Count -eq 0 -and $warnings.Count -eq 0) {
-    Write-Host "🎉 ALL CHECKS PASSED! Your backend is ready!" -ForegroundColor Green -BackgroundColor Black
+Write-Host ""
+Write-Host ""
+if ($ErrorItems.Count -eq 0 -and $WarningItems.Count -eq 0) {
+    Write-Host "ALL CHECKS PASSED! Your backend is ready!" -ForegroundColor Green -BackgroundColor Black
     Write-Host ""
     Write-Host "Next steps:" -ForegroundColor Cyan
     Write-Host "  1. Run: npm run dev" -ForegroundColor White
     Write-Host "  2. Test contact form at http://localhost:3000" -ForegroundColor White
     Write-Host "  3. Deploy to Amplify" -ForegroundColor White
-} elseif ($errors.Count -eq 0) {
-    Write-Host "✅ Backend is functional but has minor issues" -ForegroundColor Yellow -BackgroundColor Black
+} elseif ($ErrorItems.Count -eq 0) {
+    Write-Host "Backend is functional but has minor issues" -ForegroundColor Yellow -BackgroundColor Black
     Write-Host ""
+    Write-Host "$WarningItems"
     Write-Host "Recommended actions:" -ForegroundColor Cyan
-    Write-Host "  • Review warnings above" -ForegroundColor White
-    Write-Host "  • Run: .\aws\deploy.ps1 to fix missing components" -ForegroundColor White
+    Write-Host "Review warnings above" -ForegroundColor White
+    Write-Host "Run: .\\aws\\deploy.ps1 to fix missing components" -ForegroundColor White
 } else {
-    Write-Host "❌ Backend setup incomplete" -ForegroundColor Red -BackgroundColor Black
+    Write-Host "Backend setup incomplete" -ForegroundColor Red -BackgroundColor Black
     Write-Host ""
     Write-Host "Required actions:" -ForegroundColor Cyan
-    Write-Host "  1. Run: .\aws\deploy.ps1 to set up AWS infrastructure" -ForegroundColor White
+    Write-Host "  1. Run: .\\aws\\deploy.ps1 to set up AWS infrastructure" -ForegroundColor White
     Write-Host "  2. Configure AWS credentials if needed: aws configure" -ForegroundColor White
     Write-Host "  3. Re-run this health check" -ForegroundColor White
 }
-Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host ""
+Write-Host ""
 Write-Host ""
 
-# Test API Endpoint (if available)
-if ($apiEndpoint) {
-    Write-Host "🧪 Want to test the API endpoint? (y/N)" -ForegroundColor Cyan
+if ($ApiEndpoint) {
+    Write-Host "Want to test the API endpoint? (y/N)" -ForegroundColor Cyan
     $testApi = Read-Host
-    if ($testApi -eq "y") {
+    if ($testApi -eq 'y') {
         Write-Host ""
         Write-Host "Testing GET /blogs..." -ForegroundColor Yellow
         try {
-            $response = Invoke-RestMethod -Uri "$apiEndpoint/blogs" -Method Get -TimeoutSec 10
-            Write-Host "  ✅ API is responding!" -ForegroundColor Green
-            Write-Host "  Found $($response.count) blog posts" -ForegroundColor Gray
+            $response = Invoke-RestMethod -Uri "$ApiEndpoint/blogs" -Method Get -TimeoutSec 10
+            Write-Status -Level Success -Message "API is responding!" -Summary "API endpoint reachable"
+            if ($response.Count -or $response.items) {
+                $count = if ($response.Count) { $response.Count } elseif ($response.items) { $response.items.Count } else { 0 }
+                Write-Host "  Found $count blog post(s)" -ForegroundColor Gray
+            }
         } catch {
-            Write-Host "  ❌ API test failed: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Status -Level Error -Message "API test failed: $($_.Exception.Message)" -Summary "API test failed"
         }
     }
 }

@@ -62,7 +62,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: blob: https:",
-              "connect-src 'self' https://vitals.vercel-insights.com",
+              "connect-src 'self' https://*.execute-api.us-east-1.amazonaws.com",
               "frame-ancestors 'self'",
             ].join('; ')
           },

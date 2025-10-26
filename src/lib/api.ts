@@ -44,7 +44,13 @@ export interface BlogsResponse {
 export async function submitContactForm(
   data: ContactFormData
 ): Promise<ContactFormResponse> {
+  // Validate API endpoint is configured
+  if (!API_ENDPOINT) {
+    throw new Error('API endpoint is not configured. Please contact the administrator.');
+  }
+
   try {
+    
     const response = await fetch(`${API_ENDPOINT}/contact`, {
       method: 'POST',
       headers: {
@@ -54,13 +60,24 @@ export async function submitContactForm(
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to submit form');
+      let errorMessage = 'Failed to submit form';
+      try {
+        const error = await response.json();
+        errorMessage = error.error || error.message || errorMessage;
+      } catch {
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
     return await response.json();
   } catch (error) {
-    console.error('Error submitting contact form:', error);
+    
+    // Provide more helpful error messages
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error. Please check your internet connection and try again.');
+    }
+    
     throw error;
   }
 }
@@ -97,7 +114,6 @@ export async function fetchBlogs(
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching blogs:', error);
     throw error;
   }
 }
@@ -125,7 +141,6 @@ export async function fetchBlogById(id: string): Promise<BlogPost> {
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching blog:', error);
     throw error;
   }
 }
@@ -155,7 +170,6 @@ export async function createBlog(
     const result = await response.json();
     return result.blog;
   } catch (error) {
-    console.error('Error creating blog:', error);
     throw error;
   }
 }
@@ -186,7 +200,6 @@ export async function updateBlog(
     const result = await response.json();
     return result.blog;
   } catch (error) {
-    console.error('Error updating blog:', error);
     throw error;
   }
 }
@@ -209,7 +222,6 @@ export async function deleteBlog(id: string, apiKey: string): Promise<void> {
       throw new Error(error.error || 'Failed to delete blog');
     }
   } catch (error) {
-    console.error('Error deleting blog:', error);
     throw error;
   }
 }
