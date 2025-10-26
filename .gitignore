@@ -33,6 +33,11 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# AWS Lambda deployment packages
+aws/lambda/node_modules/
+aws/lambda/*.zip
+aws/lambda/package-lock.json
+
 # vercel
 .vercel
 

@@ -6,7 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "aws:deploy": "powershell -ExecutionPolicy Bypass -File ./aws/deploy.ps1",
+    "aws:seed": "powershell -ExecutionPolicy Bypass -File ./aws/seed-blogs.ps1",
+    "aws:health": "powershell -ExecutionPolicy Bypass -File ./health-check.ps1",
+    "setup:env": "powershell -ExecutionPolicy Bypass -File ./setup-env.ps1"
   },
   "dependencies": {
     "next": "15.5.5",

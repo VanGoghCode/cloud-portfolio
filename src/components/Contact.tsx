@@ -12,6 +12,7 @@ import {
   FaArrowRight,
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import { submitContactForm } from "@/lib/api";
 
 interface ContactProps {
   email?: string;
@@ -62,20 +63,36 @@ export default function Contact({
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage("");
 
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      // Submit to AWS Lambda via API Gateway
+      const response = await submitContactForm(formData);
+      
       setIsSubmitting(false);
       setSubmitStatus("success");
       setFormData({ name: "", email: "", subject: "", message: "" });
 
       // Reset success message after 5 seconds
       setTimeout(() => setSubmitStatus("idle"), 5000);
-    }, 1500);
+    } catch (error) {
+      setIsSubmitting(false);
+      setSubmitStatus("error");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Failed to send message. Please try again."
+      );
+
+      // Reset error message after 5 seconds
+      setTimeout(() => {
+        setSubmitStatus("idle");
+        setErrorMessage("");
+      }, 5000);
+    }
   };
 
   const handleChange = (
@@ -303,10 +320,10 @@ export default function Contact({
                 >
                   <div className="flex items-center justify-center gap-2 text-red-700 font-bold text-lg">
                     <span className="text-2xl">✗</span>
-                    Failed to send message
+                    {errorMessage || "Failed to send message"}
                   </div>
                   <p className="text-sm mt-2 text-red-600">
-                    Please try again later
+                    Please try again later or email me directly
                   </p>
                 </div>
               )}

@@ -1,6 +1,7 @@
 import React from "react";
 import { Section } from "@/components";
 import type { Metadata } from "next";
+import { fetchBlogs } from "@/lib/api";
 
 // Enhanced metadata for the blogs page
 export const metadata: Metadata = {
@@ -19,36 +20,56 @@ export const metadata: Metadata = {
   },
 };
 
-// Note: This is a Server Component by default in Next.js 15
-// ISR can be configured in next.config.ts or per route if needed
+// Enable ISR (Incremental Static Regeneration)
+export const revalidate = 3600; // Revalidate every hour
 
-export default function BlogPage() {
-  const posts = [
+// Note: This is a Server Component by default in Next.js 15
+export default async function BlogPage() {
+  // Fallback posts in case API is not configured or fails
+  const fallbackPosts = [
     {
+      id: "fallback-1",
       title: "Designing Cloud-Native Frontends",
       excerpt:
         "Principles and patterns for building resilient, scalable UIs that thrive on cloud infra.",
-      date: "2025-09-15",
+      date: "2025-09-15T00:00:00.000Z",
       readingTime: "6 min",
       tags: ["Cloud", "Frontend", "Architecture"],
     },
     {
+      id: "fallback-2",
       title: "Next.js + Edge: A Practical Guide",
       excerpt:
         "When to choose edge functions, caching strategies that matter, and pitfalls to avoid.",
-      date: "2025-07-22",
+      date: "2025-07-22T00:00:00.000Z",
       readingTime: "8 min",
       tags: ["Next.js", "Edge", "Performance"],
     },
     {
+      id: "fallback-3",
       title: "Minimalist UI: Doing More with Less",
       excerpt:
         "The aesthetics and ergonomics of minimalist design, with practical Tailwind tips.",
-      date: "2025-05-02",
+      date: "2025-05-02T00:00:00.000Z",
       readingTime: "5 min",
       tags: ["Design", "UX", "Tailwind"],
     },
   ];
+
+  let posts = fallbackPosts;
+
+  // Try to fetch from API if configured
+  if (process.env.NEXT_PUBLIC_API_ENDPOINT) {
+    try {
+      const response = await fetchBlogs(50);
+      if (response.blogs && response.blogs.length > 0) {
+        posts = response.blogs;
+      }
+    } catch (error) {
+      console.error("Failed to fetch blogs from API:", error);
+      // Falls back to fallback posts
+    }
+  }
 
   return (
     <main>
@@ -73,9 +94,9 @@ export default function BlogPage() {
 
           {/* Posts */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post, idx) => (
+            {posts.map((post) => (
               <article
-                key={idx}
+                key={post.id}
                 className="group relative overflow-hidden rounded-3xl transition-all duration-300 hover:scale-[1.02]"
                 style={{
                   background: "rgba(255,255,255,0.4)",
