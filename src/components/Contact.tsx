@@ -72,7 +72,7 @@ export default function Contact({
 
     try {
       // Submit to AWS Lambda via API Gateway
-      const response = await submitContactForm(formData);
+      await submitContactForm(formData);
       
       setIsSubmitting(false);
       setSubmitStatus("success");

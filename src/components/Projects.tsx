@@ -90,31 +90,23 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
         </div>
 
         <div className="flex gap-3">
-          {(() => {
-            const demoUrl = project.link ?? project.github;
-            return (
-              <Button
-                onClick={() => demoUrl && window.open(demoUrl, '_blank')}
-                size="sm"
-                className="flex-1 rounded-xl gap-2"
-                disabled={!demoUrl}
-                title={demoUrl ? 'Open Demo' : 'No demo available'}
-              >
-                <FaExternalLinkAlt className="text-xs" />
-                Demo
-              </Button>
-            );
-          })()}
-          {project.github && (
-            <Button
-              onClick={() => window.open(project.github!, '_blank')}
-              size="sm"
-              className="flex-1 rounded-xl gap-2 border border-foreground/20 hover:scale-105"
-            >
-              <FaGithub />
-              Code
-            </Button>
-          )}
+          <Button
+            onClick={() => window.location.href = '/coming-soon'}
+            size="sm"
+            className="flex-1 rounded-xl gap-2"
+            title="View Demo"
+          >
+            <FaExternalLinkAlt className="text-xs" />
+            Demo
+          </Button>
+          <Button
+            onClick={() => window.location.href = '/coming-soon'}
+            size="sm"
+            className="flex-1 rounded-xl gap-2 border border-foreground/20 hover:scale-105"
+          >
+            <FaGithub />
+            Code
+          </Button>
         </div>
       </div>
     </div>
