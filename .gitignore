@@ -38,6 +38,9 @@ aws/lambda/node_modules/
 aws/lambda/*.zip
 aws/lambda/package-lock.json
 
+# AWS configuration (contains your personal settings)
+aws/config.env
+
 # vercel
 .vercel
 
