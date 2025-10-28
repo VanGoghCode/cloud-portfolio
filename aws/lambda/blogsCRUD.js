@@ -23,6 +23,7 @@ const {
   UpdateCommand, 
   DeleteCommand 
 } = require("@aws-sdk/lib-dynamodb");
+const crypto = require("crypto");
 
 const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
@@ -86,12 +87,41 @@ exports.handler = async (event) => {
   }
 };
 
-// Check API key for write operations
+// Check authentication for write operations
 function checkAuth(event) {
-  if (!process.env.API_KEY) return true; // No auth configured
+  const SESSION_EXPIRY_HOURS = 24;
+  const secret = process.env.SESSION_SECRET || 'default-secret-change-me';
   
+  // First try session token (from admin panel)
   const authHeader = event.headers?.Authorization || event.headers?.authorization;
-  return authHeader === `Bearer ${process.env.API_KEY}`;
+  if (!authHeader) {
+    return false;
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+
+  // Verify session token
+  try {
+    const [data, signature] = token.split('.');
+    if (!data || !signature) {
+      return false;
+    }
+
+    const expectedSignature = crypto.createHmac('sha256', secret).update(data).digest('hex');
+    
+    if (signature !== expectedSignature) {
+      return false;
+    }
+
+    const [timestamp] = data.split('-');
+    const expiryTime = SESSION_EXPIRY_HOURS * 60 * 60 * 1000;
+    const isValid = (Date.now() - parseInt(timestamp)) < expiryTime;
+    
+    return isValid;
+  } catch (error) {
+    console.error('Auth error:', error);
+    return false;
+  }
 }
 
 // GET all blogs (with pagination and filtering)

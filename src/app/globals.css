@@ -1196,3 +1196,18 @@ footer {
   transform: translateZ(0);
   will-change: auto;
 }
+
+/* Admin mode: disable decorative overlays and gradients on admin routes */
+body.admin-mode::before,
+body.admin-mode::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  animation: none !important;
+  height: 0 !important;
+}
+
+/* Ensure a clean, neutral background for admin pages */
+body.admin-mode {
+  background: #FAFAFA !important;
+}

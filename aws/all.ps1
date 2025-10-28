@@ -9,23 +9,27 @@ $regionArg = if ($Region) { "-Region $Region" } else { "" }
 Write-Host "=== Running full AWS setup ===" -ForegroundColor Cyan
 
 # Step 1: Set up DynamoDB tables first (no dependencies)
-Write-Host "`n[1/6] Setting up DynamoDB..." -ForegroundColor Yellow
+Write-Host "`n[1/7] Setting up DynamoDB..." -ForegroundColor Yellow
 & "$PSScriptRoot\dynamodb.ps1" $regionArg
 
 # Step 2: Configure SES for email (no dependencies)
-Write-Host "`n[2/6] Configuring SES..." -ForegroundColor Yellow
+Write-Host "`n[2/7] Configuring SES..." -ForegroundColor Yellow
 & "$PSScriptRoot\ses.ps1" $regionArg
 
 # Step 3: Create IAM roles (needed before Lambda deployment)
-Write-Host "`n[3/6] Creating IAM roles..." -ForegroundColor Yellow
+Write-Host "`n[3/7] Creating IAM roles..." -ForegroundColor Yellow
 & "$PSScriptRoot\iam.ps1" $regionArg
 
 # Step 4: Deploy Lambda functions (depends on IAM roles and DynamoDB)
-Write-Host "`n[4/6] Deploying Lambda functions..." -ForegroundColor Yellow
+Write-Host "`n[4/7] Deploying Lambda functions..." -ForegroundColor Yellow
 & "$PSScriptRoot\lambda-deploy.ps1" $regionArg
 
-# Step 5: Set up API Gateway (depends on Lambda functions)
-Write-Host "`n[5/6] Configuring API Gateway..." -ForegroundColor Yellow
+# Step 5: Set up Admin Authentication (depends on Lambda, DynamoDB, and SES)
+Write-Host "`n[5/7] Setting up Admin Authentication..." -ForegroundColor Yellow
+& "$PSScriptRoot\admin-auth.ps1" $regionArg
+
+# Step 6: Set up API Gateway (depends on Lambda functions)
+Write-Host "`n[6/7] Configuring API Gateway..." -ForegroundColor Yellow
 & "$PSScriptRoot\apigateway.ps1" $regionArg
 
 # Capture API Gateway endpoint automatically
@@ -40,23 +44,23 @@ if ($apiEndpoint) {
     Write-Host "WARNING: Could not retrieve API endpoint automatically" -ForegroundColor Yellow
 }
 
-# Step 6: Seed initial blog data (optional, depends on DynamoDB and Lambda)
-Write-Host "`n[6/6] Seeding blog data..." -ForegroundColor Yellow
+# Step 7: Seed initial blog data (optional, depends on DynamoDB and Lambda)
+Write-Host "`n[7/7] Seeding blog data..." -ForegroundColor Yellow
 & "$PSScriptRoot\seed-blogs.ps1" $regionArg
 
 Write-Host "`n=== AWS Infrastructure Setup Complete ===" -ForegroundColor Green
 
-# Step 7: Run health check to verify all resources
+# Step 8: Run health check to verify all resources
 if (-not $SkipHealthCheck) {
-    Write-Host "`n[7/8] Running health check..." -ForegroundColor Yellow
+    Write-Host "`n[8/9] Running health check..." -ForegroundColor Yellow
     & "$PSScriptRoot\..\health-check.ps1"
 } else {
     Write-Host "`nSkipping health check" -ForegroundColor Gray
 }
 
-# Step 8: Setup environment file for local development
+# Step 9: Setup environment file for local development
 if (-not $SkipEnvSetup) {
-    Write-Host "`n[8/8] Setting up environment configuration..." -ForegroundColor Yellow
+    Write-Host "`n[9/9] Setting up environment configuration..." -ForegroundColor Yellow
     
     if ($apiEndpoint) {
         # Auto-populate if we have the endpoint

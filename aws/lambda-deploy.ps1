@@ -8,7 +8,7 @@ Write-Host "[Lambda] Packaging and deploying functions..." -ForegroundColor Yell
 
 $configFile = Join-Path $PSScriptRoot "config.env"
 $AWS_REGION = if ($Region) { $Region } else { "us-east-1" }
-$SES_EMAIL = if ($Email) { $Email } else { "" }
+$SES_FROM_EMAIL = if ($Email) { $Email } else { "" }
 $DYNAMODB_CONTACT_TABLE = "portfolio-contact-messages"
 $DYNAMODB_BLOGS_TABLE = "portfolio-blog-posts"
 $LAMBDA_CONTACT_FUNCTION = "portfolio-contact-form"
@@ -35,9 +35,9 @@ function Wait-LambdaReady($FunctionName, $Region) {
   return $false
 }
 
-if ([string]::IsNullOrWhiteSpace($SES_EMAIL)) {
-  $SES_EMAIL = Read-Host "Enter SES email (for contact form notifications)"
-  if ([string]::IsNullOrWhiteSpace($SES_EMAIL)) { Write-Host "Email is required" -ForegroundColor Red; exit 1 }
+if ([string]::IsNullOrWhiteSpace($SES_FROM_EMAIL)) {
+  $SES_FROM_EMAIL = Read-Host "Enter SES email (for contact form notifications)"
+  if ([string]::IsNullOrWhiteSpace($SES_FROM_EMAIL)) { Write-Host "Email is required" -ForegroundColor Red; exit 1 }
 }
 
 if ([string]::IsNullOrWhiteSpace($API_KEY)) {
@@ -69,7 +69,7 @@ $createOutput = aws lambda create-function `
   --zip-file fileb://contactForm.zip `
   --timeout 30 `
   --memory-size 256 `
-  --environment "Variables={DYNAMODB_TABLE_NAME=$DYNAMODB_CONTACT_TABLE,SES_FROM_EMAIL=$SES_EMAIL,SES_TO_EMAIL=$SES_EMAIL}" `
+  --environment "Variables={DYNAMODB_TABLE_NAME=$DYNAMODB_CONTACT_TABLE,SES_FROM_EMAIL=$SES_FROM_EMAIL,SES_TO_EMAIL=$SES_FROM_EMAIL}" `
   --region $AWS_REGION `
   --no-cli-pager 2>&1
 
@@ -82,7 +82,7 @@ elseif ($createOutput -match "ResourceConflictException|already exists") {
 
     $updateOutput = aws lambda update-function-configuration `
       --function-name $LAMBDA_CONTACT_FUNCTION `
-      --environment "Variables={DYNAMODB_TABLE_NAME=$DYNAMODB_CONTACT_TABLE,SES_FROM_EMAIL=$SES_EMAIL,SES_TO_EMAIL=$SES_EMAIL}" `
+      --environment "Variables={DYNAMODB_TABLE_NAME=$DYNAMODB_CONTACT_TABLE,SES_FROM_EMAIL=$SES_FROM_EMAIL,SES_TO_EMAIL=$SES_FROM_EMAIL}" `
       --region $AWS_REGION `
       --no-cli-pager 2>&1
     if ($LASTEXITCODE -eq 0) { 
@@ -107,7 +107,7 @@ $createOutput = aws lambda create-function `
   --zip-file fileb://blogsCRUD.zip `
   --timeout 30 `
   --memory-size 256 `
-  --environment "Variables={DYNAMODB_BLOGS_TABLE=$DYNAMODB_BLOGS_TABLE,API_KEY=$API_KEY}" `
+  --environment "Variables={DYNAMODB_BLOGS_TABLE=$DYNAMODB_BLOGS_TABLE,API_KEY=$API_KEY,SESSION_SECRET=$SESSION_SECRET}" `
   --region $AWS_REGION `
   --no-cli-pager 2>&1
 
@@ -117,7 +117,7 @@ elseif ($createOutput -match "ResourceConflictException|already exists") {
   if ($LASTEXITCODE -eq 0) {
     aws lambda update-function-configuration `
       --function-name $LAMBDA_BLOGS_FUNCTION `
-      --environment "Variables={DYNAMODB_BLOGS_TABLE=$DYNAMODB_BLOGS_TABLE,API_KEY=$API_KEY}" `
+  --environment "Variables={DYNAMODB_BLOGS_TABLE=$DYNAMODB_BLOGS_TABLE,API_KEY=$API_KEY,SESSION_SECRET=$SESSION_SECRET}" `
       --region $AWS_REGION `
       --no-cli-pager 2>$null
     if ($LASTEXITCODE -eq 0) { Write-Host "Blogs Lambda updated" -ForegroundColor Green } else { Write-Host "Failed to update blogs lambda configuration" -ForegroundColor Red }

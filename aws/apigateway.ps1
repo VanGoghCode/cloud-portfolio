@@ -8,6 +8,7 @@ $configFile = Join-Path $PSScriptRoot "config.env"
 $AWS_REGION = if ($Region) { $Region } else { "us-east-1" }
 $LAMBDA_CONTACT_FUNCTION = "portfolio-contact-form"
 $LAMBDA_BLOGS_FUNCTION = "portfolio-blogs-crud"
+$LAMBDA_ADMIN_AUTH_FUNCTION = "PortfolioAdminAuth"
 $API_GATEWAY_NAME = "Portfolio API"
 
 if (Test-Path $configFile) {
@@ -66,6 +67,44 @@ aws apigateway put-method --rest-api-id $API_ID --resource-id $BLOGS_RESOURCE_ID
 aws apigateway put-method-response --rest-api-id $API_ID --resource-id $BLOGS_RESOURCE_ID --http-method GET --status-code 200 --response-parameters "method.response.header.Access-Control-Allow-Origin=false" --region $AWS_REGION --no-cli-pager 2>$null
 aws apigateway put-integration --rest-api-id $API_ID --resource-id $BLOGS_RESOURCE_ID --http-method GET --type AWS_PROXY --integration-http-method POST --uri "arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:function:${LAMBDA_BLOGS_FUNCTION}/invocations" --region $AWS_REGION --no-cli-pager 2>$null
 aws lambda add-permission --function-name $LAMBDA_BLOGS_FUNCTION --statement-id apigateway-blogs --action lambda:InvokeFunction --principal apigateway.amazonaws.com --source-arn "arn:aws:execute-api:${AWS_REGION}:${AWS_ACCOUNT_ID}:${API_ID}/*/*/blogs" --region $AWS_REGION --no-cli-pager 2>$null
+
+# /blogs POST -> blogs lambda (for creating posts)
+aws apigateway put-method --rest-api-id $API_ID --resource-id $BLOGS_RESOURCE_ID --http-method POST --authorization-type NONE --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-method-response --rest-api-id $API_ID --resource-id $BLOGS_RESOURCE_ID --http-method POST --status-code 200 --response-parameters "method.response.header.Access-Control-Allow-Origin=false" --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-integration --rest-api-id $API_ID --resource-id $BLOGS_RESOURCE_ID --http-method POST --type AWS_PROXY --integration-http-method POST --uri "arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:function:${LAMBDA_BLOGS_FUNCTION}/invocations" --region $AWS_REGION --no-cli-pager 2>$null
+aws lambda add-permission --function-name $LAMBDA_BLOGS_FUNCTION --statement-id apigateway-blogs-post --action lambda:InvokeFunction --principal apigateway.amazonaws.com --source-arn "arn:aws:execute-api:${AWS_REGION}:${AWS_ACCOUNT_ID}:${API_ID}/*/POST/blogs" --region $AWS_REGION --no-cli-pager 2>$null
+
+# /admin resource
+$ADMIN_RESOURCE_ID = Ensure-Resource -pathPart "admin"
+Enable-CORS $ADMIN_RESOURCE_ID
+
+# /admin/request-code POST -> admin auth lambda
+$adminRequestCodePath = "admin/request-code"
+$adminRequestCodeId = aws apigateway get-resources --rest-api-id $API_ID --region $AWS_REGION --query "items[?path=='/$adminRequestCodePath'].id" --output text --no-cli-pager 2>$null
+if ([string]::IsNullOrWhiteSpace($adminRequestCodeId)) {
+  $requestCodeParentId = $ADMIN_RESOURCE_ID
+  ($null = aws apigateway create-resource --rest-api-id $API_ID --parent-id $requestCodeParentId --path-part "request-code" --region $AWS_REGION --output json); 
+  $adminRequestCodeId = aws apigateway get-resources --rest-api-id $API_ID --region $AWS_REGION --query "items[?path=='/$adminRequestCodePath'].id" --output text --no-cli-pager
+}
+Enable-CORS $adminRequestCodeId
+aws apigateway put-method --rest-api-id $API_ID --resource-id $adminRequestCodeId --http-method POST --authorization-type NONE --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-method-response --rest-api-id $API_ID --resource-id $adminRequestCodeId --http-method POST --status-code 200 --response-parameters "method.response.header.Access-Control-Allow-Origin=false" --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-integration --rest-api-id $API_ID --resource-id $adminRequestCodeId --http-method POST --type AWS_PROXY --integration-http-method POST --uri "arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:function:${LAMBDA_ADMIN_AUTH_FUNCTION}/invocations" --region $AWS_REGION --no-cli-pager 2>$null
+aws lambda add-permission --function-name $LAMBDA_ADMIN_AUTH_FUNCTION --statement-id apigateway-admin-request --action lambda:InvokeFunction --principal apigateway.amazonaws.com --source-arn "arn:aws:execute-api:${AWS_REGION}:${AWS_ACCOUNT_ID}:${API_ID}/*/POST/admin/request-code" --region $AWS_REGION --no-cli-pager 2>$null
+
+# /admin/verify-code POST -> admin auth lambda
+$adminVerifyCodePath = "admin/verify-code"
+$adminVerifyCodeId = aws apigateway get-resources --rest-api-id $API_ID --region $AWS_REGION --query "items[?path=='/$adminVerifyCodePath'].id" --output text --no-cli-pager 2>$null
+if ([string]::IsNullOrWhiteSpace($adminVerifyCodeId)) {
+  $verifyCodeParentId = $ADMIN_RESOURCE_ID
+  ($null = aws apigateway create-resource --rest-api-id $API_ID --parent-id $verifyCodeParentId --path-part "verify-code" --region $AWS_REGION --output json); 
+  $adminVerifyCodeId = aws apigateway get-resources --rest-api-id $API_ID --region $AWS_REGION --query "items[?path=='/$adminVerifyCodePath'].id" --output text --no-cli-pager
+}
+Enable-CORS $adminVerifyCodeId
+aws apigateway put-method --rest-api-id $API_ID --resource-id $adminVerifyCodeId --http-method POST --authorization-type NONE --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-method-response --rest-api-id $API_ID --resource-id $adminVerifyCodeId --http-method POST --status-code 200 --response-parameters "method.response.header.Access-Control-Allow-Origin=false" --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-integration --rest-api-id $API_ID --resource-id $adminVerifyCodeId --http-method POST --type AWS_PROXY --integration-http-method POST --uri "arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:function:${LAMBDA_ADMIN_AUTH_FUNCTION}/invocations" --region $AWS_REGION --no-cli-pager 2>$null
+aws lambda add-permission --function-name $LAMBDA_ADMIN_AUTH_FUNCTION --statement-id apigateway-admin-verify --action lambda:InvokeFunction --principal apigateway.amazonaws.com --source-arn "arn:aws:execute-api:${AWS_REGION}:${AWS_ACCOUNT_ID}:${API_ID}/*/POST/admin/verify-code" --region $AWS_REGION --no-cli-pager 2>$null
 
 Start-Sleep -Seconds 3
 

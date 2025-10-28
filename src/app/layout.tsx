@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components";
+import ClientHeaderGate from "@/components/ClientHeaderGate";
+import BodyClassGate from "@/components/BodyClassGate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -89,7 +90,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <head>
         {/* Preconnect to external resources for faster loading */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -104,7 +105,8 @@ export default function RootLayout({
           WebkitOverflowScrolling: 'touch'
         } as React.CSSProperties}
       >
-        <Header />
+  <BodyClassGate />
+  <ClientHeaderGate />
         {children}
       </body>
     </html>

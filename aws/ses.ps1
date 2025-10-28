@@ -7,7 +7,7 @@ Write-Host "[SES] Verifying email..." -ForegroundColor Yellow
 
 $configFile = Join-Path $PSScriptRoot "config.env"
 $AWS_REGION = if ($Region) { $Region } else { "us-east-1" }
-$SES_EMAIL = if ($Email) { $Email } else { "" }
+$SES_FROM_EMAIL = if ($Email) { $Email } else { "" }
 
 if (Test-Path $configFile) {
   Get-Content $configFile | ForEach-Object {
@@ -18,13 +18,13 @@ if (Test-Path $configFile) {
   }
 }
 
-if ([string]::IsNullOrWhiteSpace($SES_EMAIL)) {
-  $SES_EMAIL = Read-Host "Enter your verified SES email address"
-  if ([string]::IsNullOrWhiteSpace($SES_EMAIL)) { Write-Host "Email is required" -ForegroundColor Red; exit 1 }
+if ([string]::IsNullOrWhiteSpace($SES_FROM_EMAIL)) {
+  $SES_FROM_EMAIL = Read-Host "Enter your verified SES email address"
+  if ([string]::IsNullOrWhiteSpace($SES_FROM_EMAIL)) { Write-Host "Email is required" -ForegroundColor Red; exit 1 }
 }
 
 $sesOutput = aws ses verify-email-identity `
-  --email-address $SES_EMAIL `
+  --email-address $SES_FROM_EMAIL `
   --region $AWS_REGION `
   --no-cli-pager 2>&1
 
