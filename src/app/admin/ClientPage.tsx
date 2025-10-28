@@ -69,9 +69,11 @@ export default function AdminLoginPage() {
       }
 
       setMessage(data.message);
-      // Redirect to blog creation page after successful authentication
+      // Store session for navigation
+      localStorage.setItem('admin_session', data.apiKey);
+      // Show success message briefly before redirecting
       setTimeout(() => {
-        router.push('/admin/create-blog');
+        router.push('/admin/manage');
       }, 1000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to verify code');

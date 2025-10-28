@@ -49,6 +49,7 @@ exports.handler = async (event) => {
   const method = event.httpMethod;
   const pathParameters = event.pathParameters || {};
   const blogId = pathParameters.id;
+  const queryParams = event.queryStringParameters || {};
 
   try {
     // Route based on HTTP method
@@ -57,7 +58,7 @@ exports.handler = async (event) => {
         if (blogId) {
           return await getBlogById(blogId, headers);
         }
-        return await getAllBlogs(event.queryStringParameters, headers);
+        return await getAllBlogs(queryParams, headers, event);
       
       case "POST":
         return await createBlog(event, headers);
@@ -67,6 +68,16 @@ exports.handler = async (event) => {
       
       case "DELETE":
         return await deleteBlog(event, blogId, headers);
+      
+      // Support POST actions on /blogs/{id}?action={view|react|comment}
+      case "POST":
+        if (blogId) {
+          const action = (queryParams.action || '').toLowerCase();
+          if (action === 'view') return await incrementView(blogId, headers);
+          if (action === 'react') return await addReaction(event, blogId, headers);
+          if (action === 'comment') return await addComment(event, blogId, headers);
+        }
+        return await createBlog(event, headers);
       
       default:
         return {
@@ -94,6 +105,13 @@ function checkAuth(event) {
   
   // First try session token (from admin panel)
   const authHeader = event.headers?.Authorization || event.headers?.authorization;
+  
+  console.log('Auth check:', {
+    hasAuthHeader: !!authHeader,
+    headerKeys: Object.keys(event.headers || {}),
+    method: event.httpMethod
+  });
+  
   if (!authHeader) {
     return false;
   }
@@ -104,12 +122,14 @@ function checkAuth(event) {
   try {
     const [data, signature] = token.split('.');
     if (!data || !signature) {
+      console.log('Invalid token format');
       return false;
     }
 
     const expectedSignature = crypto.createHmac('sha256', secret).update(data).digest('hex');
     
     if (signature !== expectedSignature) {
+      console.log('Invalid signature');
       return false;
     }
 
@@ -117,6 +137,7 @@ function checkAuth(event) {
     const expiryTime = SESSION_EXPIRY_HOURS * 60 * 60 * 1000;
     const isValid = (Date.now() - parseInt(timestamp)) < expiryTime;
     
+    console.log('Token validation:', { isValid, age: Date.now() - parseInt(timestamp) });
     return isValid;
   } catch (error) {
     console.error('Auth error:', error);
@@ -125,29 +146,50 @@ function checkAuth(event) {
 }
 
 // GET all blogs (with pagination and filtering)
-async function getAllBlogs(queryParams, headers) {
+async function getAllBlogs(queryParams, headers, event) {
   const limit = parseInt(queryParams?.limit) || 50;
   const lastKey = queryParams?.lastKey ? JSON.parse(decodeURIComponent(queryParams.lastKey)) : undefined;
+  const q = (queryParams?.q || '').toLowerCase();
+  const tagFilter = queryParams?.tag || '';
+  
+  // Check if request is authenticated (admin viewing drafts)
+  const isAuthenticated = checkAuth(event);
 
   const params = {
     TableName: process.env.DYNAMODB_BLOGS_TABLE,
     Limit: limit,
     ExclusiveStartKey: lastKey,
-    FilterExpression: "#status = :status",
-    ExpressionAttributeNames: {
-      "#status": "status"
-    },
-    ExpressionAttributeValues: {
-      ":status": "published"
-    }
   };
+  
+  // Only filter by published status if NOT authenticated
+  if (!isAuthenticated) {
+    params.FilterExpression = "#status = :status";
+    params.ExpressionAttributeNames = {
+      "#status": "status"
+    };
+    params.ExpressionAttributeValues = {
+      ":status": "published"
+    };
+  }
 
   const result = await docClient.send(new ScanCommand(params));
 
+  // Client-side filtering for search and tag (DynamoDB Scan limitation)
+  let items = result.Items || [];
+  if (q) {
+    items = items.filter((it) => {
+      const title = (it.title || '').toLowerCase();
+      const excerpt = (it.excerpt || '').toLowerCase();
+      const content = (it.content || '').toLowerCase();
+      return title.includes(q) || excerpt.includes(q) || content.includes(q);
+    });
+  }
+  if (tagFilter) {
+    items = items.filter((it) => Array.isArray(it.tags) && it.tags.includes(tagFilter));
+  }
+
   // Sort by date (newest first)
-  const sortedItems = (result.Items || []).sort((a, b) => 
-    new Date(b.date) - new Date(a.date)
-  );
+  const sortedItems = items.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   return {
     statusCode: 200,
@@ -195,7 +237,7 @@ async function createBlog(event, headers) {
   }
 
   const body = JSON.parse(event.body);
-  const { title, excerpt, content, tags, readingTime } = body;
+  const { title, excerpt, content, tags, readingTime, status } = body;
 
   if (!title || !excerpt || !content) {
     return {
@@ -220,8 +262,10 @@ async function createBlog(event, headers) {
     readingTime: readingTime || "5 min",
     date: timestamp,
     updatedAt: timestamp,
-    status: "published",
-    views: 0
+    status: status || "published", // Use provided status or default to published
+    views: 0,
+    reactions: {},
+    comments: []
   };
 
   await docClient.send(
@@ -239,6 +283,97 @@ async function createBlog(event, headers) {
       blog: item
     })
   };
+}
+
+// POST action: Increment view count
+async function incrementView(blogId, headers) {
+  const result = await docClient.send(
+    new UpdateCommand({
+      TableName: process.env.DYNAMODB_BLOGS_TABLE,
+      Key: { id: blogId },
+      UpdateExpression: 'SET #views = if_not_exists(#views, :zero) + :inc',
+      ExpressionAttributeNames: { '#views': 'views' },
+      ExpressionAttributeValues: { ':inc': 1, ':zero': 0 },
+      ReturnValues: 'UPDATED_NEW'
+    })
+  );
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ success: true, views: result.Attributes?.views ?? 0 })
+  };
+}
+
+// POST action: Add reaction (emoji)
+async function addReaction(event, blogId, headers) {
+  const body = safeJson(event.body);
+  const emoji = body?.emoji;
+  if (!emoji || typeof emoji !== 'string') {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'emoji is required' }) };
+  }
+
+  const result = await docClient.send(
+    new UpdateCommand({
+      TableName: process.env.DYNAMODB_BLOGS_TABLE,
+      Key: { id: blogId },
+      UpdateExpression: 'SET #reactions.#emoji = if_not_exists(#reactions.#emoji, :zero) + :one',
+      ExpressionAttributeNames: { '#reactions': 'reactions', '#emoji': emoji },
+      ExpressionAttributeValues: { ':one': 1, ':zero': 0 },
+      ReturnValues: 'ALL_NEW'
+    })
+  );
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ success: true, reactions: result.Attributes?.reactions || {} })
+  };
+}
+
+// POST action: Add comment
+async function addComment(event, blogId, headers) {
+  const body = safeJson(event.body);
+  const name = (body?.name || '').toString().trim().slice(0, 80);
+  const content = (body?.content || '').toString().trim().slice(0, 2000);
+  const website = (body?.website || '').toString().trim().slice(0, 200);
+
+  // Basic honeypot field to block bots: if website is filled, likely a bot
+  if (website) {
+    return { statusCode: 202, headers, body: JSON.stringify({ success: true }) };
+  }
+
+  if (!name || !content) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'name and content are required' }) };
+  }
+
+  const comment = {
+    id: `c_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    name,
+    content,
+    createdAt: new Date().toISOString()
+  };
+
+  const result = await docClient.send(
+    new UpdateCommand({
+      TableName: process.env.DYNAMODB_BLOGS_TABLE,
+      Key: { id: blogId },
+      UpdateExpression: 'SET #comments = list_append(if_not_exists(#comments, :empty), :newComment)',
+      ExpressionAttributeNames: { '#comments': 'comments' },
+      ExpressionAttributeValues: { ':empty': [], ':newComment': [comment] },
+      ReturnValues: 'ALL_NEW'
+    })
+  );
+
+  return {
+    statusCode: 201,
+    headers,
+    body: JSON.stringify({ success: true, comments: result.Attributes?.comments || [] })
+  };
+}
+
+function safeJson(str) {
+  try { return JSON.parse(str || '{}'); } catch { return {}; }
 }
 
 // PUT - Update blog

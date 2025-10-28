@@ -113,15 +113,25 @@ $createOutput = aws lambda create-function `
 
 if ($LASTEXITCODE -eq 0) { Write-Host "Blogs Lambda created" -ForegroundColor Green } 
 elseif ($createOutput -match "ResourceConflictException|already exists") {
-  aws lambda update-function-code --function-name $LAMBDA_BLOGS_FUNCTION --zip-file fileb://blogsCRUD.zip --region $AWS_REGION --no-cli-pager 2>$null
+  $codeOutput = aws lambda update-function-code --function-name $LAMBDA_BLOGS_FUNCTION --zip-file fileb://blogsCRUD.zip --region $AWS_REGION --no-cli-pager 2>&1
   if ($LASTEXITCODE -eq 0) {
-    aws lambda update-function-configuration `
+    # Wait for the function to finish updating before changing configuration
+    Write-Host "Waiting for blogs Lambda to be ready..." -ForegroundColor Yellow
+    $null = Wait-LambdaReady $LAMBDA_BLOGS_FUNCTION $AWS_REGION
+    
+    $updateOutput = aws lambda update-function-configuration `
       --function-name $LAMBDA_BLOGS_FUNCTION `
-  --environment "Variables={DYNAMODB_BLOGS_TABLE=$DYNAMODB_BLOGS_TABLE,API_KEY=$API_KEY,SESSION_SECRET=$SESSION_SECRET}" `
+      --environment "Variables={DYNAMODB_BLOGS_TABLE=$DYNAMODB_BLOGS_TABLE,API_KEY=$API_KEY,SESSION_SECRET=$SESSION_SECRET}" `
       --region $AWS_REGION `
-      --no-cli-pager 2>$null
-    if ($LASTEXITCODE -eq 0) { Write-Host "Blogs Lambda updated" -ForegroundColor Green } else { Write-Host "Failed to update blogs lambda configuration" -ForegroundColor Red }
-  } else { Write-Host "Failed to update blogs lambda" -ForegroundColor Red }
+      --no-cli-pager 2>&1
+    if ($LASTEXITCODE -eq 0) { 
+      Write-Host "Blogs Lambda updated" -ForegroundColor Green 
+    } else { 
+      Write-Host "Failed to update blogs lambda configuration: $updateOutput" -ForegroundColor Red 
+    }
+  } else { 
+    Write-Host "Failed to update blogs lambda: $codeOutput" -ForegroundColor Red 
+  }
 } else { Write-Host "Failed to create blogs lambda: $createOutput" -ForegroundColor Red }
 
 Pop-Location

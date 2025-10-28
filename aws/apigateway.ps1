@@ -101,6 +101,12 @@ aws apigateway put-method-response --rest-api-id $API_ID --resource-id $blogsIdR
 aws apigateway put-integration --rest-api-id $API_ID --resource-id $blogsIdResourceId --http-method DELETE --type AWS_PROXY --integration-http-method POST --uri "arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:function:${LAMBDA_BLOGS_FUNCTION}/invocations" --region $AWS_REGION --no-cli-pager 2>$null
 aws lambda add-permission --function-name $LAMBDA_BLOGS_FUNCTION --statement-id apigateway-blogs-delete --action lambda:InvokeFunction --principal apigateway.amazonaws.com --source-arn "arn:aws:execute-api:${AWS_REGION}:${AWS_ACCOUNT_ID}:${API_ID}/*/DELETE/blogs/*" --region $AWS_REGION --no-cli-pager 2>$null
 
+# /blogs/{id} POST -> actions (view/react/comment)
+aws apigateway put-method --rest-api-id $API_ID --resource-id $blogsIdResourceId --http-method POST --authorization-type NONE --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-method-response --rest-api-id $API_ID --resource-id $blogsIdResourceId --http-method POST --status-code 200 --response-parameters "method.response.header.Access-Control-Allow-Origin=false" --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-integration --rest-api-id $API_ID --resource-id $blogsIdResourceId --http-method POST --type AWS_PROXY --integration-http-method POST --uri "arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:function:${LAMBDA_BLOGS_FUNCTION}/invocations" --region $AWS_REGION --no-cli-pager 2>$null
+aws lambda add-permission --function-name $LAMBDA_BLOGS_FUNCTION --statement-id apigateway-blogs-post-id --action lambda:InvokeFunction --principal apigateway.amazonaws.com --source-arn "arn:aws:execute-api:${AWS_REGION}:${AWS_ACCOUNT_ID}:${API_ID}/*/POST/blogs/*" --region $AWS_REGION --no-cli-pager 2>$null
+
 # /admin resource
 $ADMIN_RESOURCE_ID = Ensure-Resource -pathPart "admin"
 Enable-CORS $ADMIN_RESOURCE_ID

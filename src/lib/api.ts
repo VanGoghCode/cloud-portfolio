@@ -30,6 +30,13 @@ export interface BlogPost {
   updatedAt?: string;
   status: 'published' | 'draft';
   views: number;
+  reactions?: Record<string, number>;
+  comments?: Array<{
+    id: string;
+    name: string;
+    content: string;
+    createdAt: string;
+  }>;
 }
 
 export interface BlogsResponse {
@@ -96,7 +103,8 @@ export async function submitContactForm(
  */
 export async function fetchBlogs(
   limit: number = 50,
-  lastKey?: string
+  lastKey?: string,
+  opts?: { q?: string; tag?: string }
 ): Promise<BlogsResponse> {
   // Validate API endpoint is configured
   if (!API_ENDPOINT) {
@@ -107,6 +115,8 @@ export async function fetchBlogs(
     const params = new URLSearchParams({
       limit: limit.toString(),
       ...(lastKey && { lastKey }),
+      ...(opts?.q ? { q: opts.q } : {}),
+      ...(opts?.tag ? { tag: opts.tag } : {}),
     });
 
     const response = await fetch(`${API_ENDPOINT}/blogs?${params}`, {
@@ -134,6 +144,50 @@ export async function fetchBlogs(
     }
     throw error;
   }
+}
+
+/**
+ * Increment view count for a blog
+ */
+export async function incrementBlogView(id: string): Promise<{ success: boolean; views: number }> {
+  if (!API_ENDPOINT) throw new Error('API endpoint is not configured.');
+  const response = await fetch(`${API_ENDPOINT}/blogs/${id}?action=view`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!response.ok) throw new Error('Failed to increment view');
+  return response.json();
+}
+
+/**
+ * React to a blog with an emoji
+ */
+export async function reactToBlog(id: string, emoji: string): Promise<{ success: boolean; reactions: Record<string, number> }> {
+  if (!API_ENDPOINT) throw new Error('API endpoint is not configured.');
+  const response = await fetch(`${API_ENDPOINT}/blogs/${id}?action=react`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ emoji }),
+  });
+  if (!response.ok) throw new Error('Failed to add reaction');
+  return response.json();
+}
+
+/**
+ * Add a comment to a blog
+ */
+export async function addComment(
+  id: string,
+  comment: { name: string; content: string; website?: string }
+): Promise<{ success: boolean; comments: BlogPost['comments'] }> {
+  if (!API_ENDPOINT) throw new Error('API endpoint is not configured.');
+  const response = await fetch(`${API_ENDPOINT}/blogs/${id}?action=comment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(comment),
+  });
+  if (!response.ok) throw new Error('Failed to add comment');
+  return response.json();
 }
 
 /**

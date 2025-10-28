@@ -40,9 +40,15 @@ yarn-error.log*
 aws/lambda/node_modules/
 aws/lambda/*.zip
 aws/lambda/package-lock.json
+aws/*.zip
 
 # AWS configuration (contains your personal settings)
 aws/config.env
+
+# Deployment helper scripts (temporary)
+deploy-*.ps1
+fix-*.ps1
+DEPLOY_*.md
 
 # vercel
 .vercel

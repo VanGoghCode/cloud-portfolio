@@ -11,6 +11,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
   try {
     const blog = await fetchBlogById(resolvedParams.id);
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://vctrx.cloud';
+    const blogUrl = `${baseUrl}/blogs/${blog.id}`;
     
     return {
       title: `${blog.title} | Kirtan Thummar`,
@@ -19,9 +21,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: blog.title,
         description: blog.excerpt,
         type: 'article',
+        url: blogUrl,
         publishedTime: blog.date,
         modifiedTime: blog.updatedAt,
         tags: blog.tags,
+        siteName: 'Kirtan Thummar Portfolio',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: blog.title,
+        description: blog.excerpt,
       },
     };
   } catch {

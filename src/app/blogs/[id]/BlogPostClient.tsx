@@ -1,36 +1,136 @@
 'use client';
 
-import { BlogPost } from '@/lib/api';
-import { Container, Badge } from '@/components';
-import { FaCalendar, FaClock, FaEye, FaArrowLeft, FaTwitter, FaLinkedin, FaFacebook } from 'react-icons/fa';
+import { BlogPost, incrementBlogView, reactToBlog, addComment } from '@/lib/api';
+import { Container, Badge, Button } from '@/components';
+import { FaCalendar, FaClock, FaEye, FaArrowLeft, FaLinkedin, FaChevronDown, FaChevronUp, FaLink } from 'react-icons/fa';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface BlogPostClientProps {
   blog: BlogPost;
 }
 
 export default function BlogPostClient({ blog }: BlogPostClientProps) {
+  const [views, setViews] = useState<number>(blog.views || 0);
+  const [reactions, setReactions] = useState<Record<string, number>>(blog.reactions || {});
+  const [comments, setComments] = useState<NonNullable<BlogPost['comments']>>(blog.comments || []);
+  const [name, setName] = useState('');
+  const [content, setContent] = useState('');
+  const [website, setWebsite] = useState(''); // honeypot
+  const [submitting, setSubmitting] = useState(false);
+  const [headerVisible, setHeaderVisible] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+
   useEffect(() => {
-    // Increment view count when blog is viewed
-    // This could be implemented as an API call if needed
+    // Increment view count once per 24h per blog using localStorage guard
+    const key = `blog_viewed_${blog.id}`;
+    const last = localStorage.getItem(key);
+    const now = Date.now();
+    if (!last || now - parseInt(last) > 24 * 60 * 60 * 1000) {
+      incrementBlogView(blog.id).then((res) => {
+        if (res?.views !== undefined) setViews(res.views);
+        localStorage.setItem(key, now.toString());
+      }).catch(() => {});
+    }
+
+    // Hide header on mount, show on unmount
+    const header = document.querySelector('.header-wrapper') as HTMLElement;
+    if (header) {
+      header.style.transform = 'translateY(-140%)';
+      header.style.transition = 'transform 0.3s ease-in-out';
+    }
+
+    return () => {
+      if (header) {
+        header.style.transform = 'translateY(0)';
+      }
+    };
   }, [blog.id]);
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
-  const shareTitle = blog.title;
 
-  const handleShare = (platform: string) => {
-    const urls = {
-      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`,
-      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-    };
+  const reactionEmojis = useMemo(() => ['👍', '🎉', '❤️', '🔥', '👏'], []);
 
-    window.open(urls[platform as keyof typeof urls], '_blank', 'width=600,height=400');
+  const toggleHeader = () => {
+    const header = document.querySelector('.header-wrapper') as HTMLElement;
+    if (header) {
+      if (headerVisible) {
+        header.style.transform = 'translateY(-140%)';
+      } else {
+        header.style.transform = 'translateY(0)';
+      }
+      setHeaderVisible(!headerVisible);
+    }
+  };
+
+  const handleReact = async (emoji: string) => {
+    const reactedKey = `blog_reacted_${blog.id}_${emoji}`;
+    if (localStorage.getItem(reactedKey)) return; // prevent multiple from same client
+    try {
+      const res = await reactToBlog(blog.id, emoji);
+      setReactions(res.reactions || {});
+      localStorage.setItem(reactedKey, '1');
+    } catch { /* ignore */ }
+  };
+
+  const submitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !content.trim()) return;
+    setSubmitting(true);
+    try {
+      const res = await addComment(blog.id, { name: name.trim(), content: content.trim(), website });
+      setComments(res.comments || []);
+      setName('');
+      setContent('');
+      setWebsite('');
+    } catch {
+      // optionally show toast
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = shareUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    }
   };
 
   return (
     <main className="min-h-screen pt-20">
+      {/* Floating Header Toggle Button */}
+      <button
+        onClick={toggleHeader}
+        className="left-1/2 -translate-x-1/2 z-[1002] px-4 py-2 rounded-xl hover:scale-110 shadow-lg"
+        style={{
+          position: 'fixed',
+          top: headerVisible ? '10vh' : '2vh',
+          background: 'rgba(255, 255, 255, 0.5)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          transition: 'top 0.3s ease-in-out, transform 0.2s ease',
+        }}
+        aria-label="Toggle navigation"
+      >
+        {headerVisible ? (
+          <FaChevronUp className="text-foreground/70" />
+        ) : (
+          <FaChevronDown className="text-foreground/70" />
+        )}
+      </button>
+
       {/* Back Button */}
       <Container className="mb-8">
         <Link
@@ -76,7 +176,7 @@ export default function BlogPostClient({ blog }: BlogPostClientProps) {
               </span>
               <span className="flex items-center gap-2">
                 <FaEye className="text-green-600" />
-                {blog.views} views
+                {views} views
               </span>
               {blog.updatedAt && blog.updatedAt !== blog.date && (
                 <span className="text-xs italic">
@@ -119,61 +219,156 @@ export default function BlogPostClient({ blog }: BlogPostClientProps) {
             dangerouslySetInnerHTML={{ __html: blog.content || '' }}
           />
 
-          {/* Divider */}
-          <div className="h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent mb-8"></div>
+          {/* Interactions - Minimal Design */}
+          <div className="space-y-6">
+            {/* Reactions + Share Row */}
+            <div 
+              className="flex flex-wrap items-center justify-between gap-3 p-6 rounded-3xl transition-all duration-500"
+              style={{
+                background: 'rgba(255, 255, 255, 0.4)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+              }}
+            >
+              <div className='flex items-center gap-3 group'>
+              {/* Reactions */}
+              {reactionEmojis.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => handleReact(emoji)}
+                  className="px-3 py-2 rounded-xl hover:scale-110 transition-all"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.6)',
+                    backdropFilter: 'blur(5px)',
+                  }}
+                  aria-label={`React with ${emoji}`}
+                  title={`React with ${emoji}`}
+                >
+                  <span className="text-xl">{emoji}</span>
+                  <span className="text-sm text-foreground/70 font-medium">{reactions?.[emoji] || 0}</span>
+                </button>
+              ))}
+              </div>
 
-          {/* Share Section */}
-          <div className="bg-foreground/5 rounded-2xl p-6 mb-8">
-            <h3 className="text-lg font-semibold mb-4">Share this article</h3>
-            <div className="flex gap-4">
-              <button
-                onClick={() => handleShare('twitter')}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
-                aria-label="Share on Twitter"
-              >
-                <FaTwitter />
-                Twitter
-              </button>
-              <button
-                onClick={() => handleShare('linkedin')}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-700 text-white hover:bg-blue-800 transition-colors"
-                aria-label="Share on LinkedIn"
-              >
-                <FaLinkedin />
-                LinkedIn
-              </button>
-              <button
-                onClick={() => handleShare('facebook')}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                aria-label="Share on Facebook"
-              >
-                <FaFacebook />
-                Facebook
-              </button>
+              {/* Divider */}
+              <div className="h-6 w-px bg-foreground/10 mx-2"></div>
+
+              {/* Share Buttons */}
+              <div className="flex items-center gap-2">
+                {/* LinkedIn Share */}
+                <button
+                  onClick={() => {
+                    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+                    window.open(url, '_blank', 'width=600,height=400');
+                  }}
+                  className="group flex items-center gap-2 px-3 py-2 rounded-xl hover:scale-110 transition-all bg-[#0A66C2] text-white"
+                  aria-label="Share on LinkedIn"
+                  title="Share on LinkedIn"
+                >
+                  <FaLinkedin className="text-lg" />
+                  <span className="text-sm font-medium">Share</span>
+                </button>
+
+                {/* Copy Link Button */}
+                <button
+                  onClick={copyLink}
+                  className="group flex items-center gap-2 px-3 py-2 rounded-xl hover:scale-110 transition-all"
+                  style={{
+                    background: copySuccess ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255, 255, 255, 0.6)',
+                    backdropFilter: 'blur(5px)',
+                  }}
+                  aria-label="Copy link"
+                  title="Copy link"
+                >
+                  <FaLink className="text-lg text-foreground/70" />
+                  <span className="text-sm font-medium text-foreground/70">
+                    {copySuccess ? 'Copied!' : 'Copy'}
+                  </span>
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Author Section (Optional - can be customized) */}
-          <div className="bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-2xl p-8 border border-foreground/10">
-            <div className="flex items-start gap-6">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
-                KT
-              </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">Kirtan Thummar</h3>
-                <p className="text-foreground/70 mb-4">
-                  Cloud-Native / DevOps Engineer with three years of experience designing secure, scalable infrastructure. 
-                  Passionate about building reliable, cost-effective AWS platforms.
-                </p>
-                <div className="flex gap-4">
-                  <Link
-                    href="/"
-                    className="text-sm text-blue-600 hover:underline"
-                  >
-                    View Profile →
-                  </Link>
+            {/* Comments */}
+            <div 
+              className="p-6 rounded-3xl transition-all duration-500"
+              style={{
+                background: 'rgba(255, 255, 255, 0.4)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+              }}
+            >
+              {/* Comments List */}
+              {comments.length === 0 ? (
+                <p className="text-foreground/50 text-sm mb-6">💬 No comments yet</p>
+              ) : (
+                <div className="space-y-3 mb-6">
+                  {comments.map((c) => (
+                    <div 
+                      key={c.id} 
+                      className="p-4 rounded-2xl"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.6)',
+                        backdropFilter: 'blur(5px)',
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-sm">{c.name}</span>
+                        <span className="text-xs text-foreground/50">{new Date(c.createdAt).toLocaleString()}</span>
+                      </div>
+                      <p className="text-sm text-foreground/70 whitespace-pre-line">{c.content}</p>
+                    </div>
+                  ))}
                 </div>
-              </div>
+              )}
+
+              {/* Comment Form */}
+              <form onSubmit={submitComment} className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.7)',
+                    backdropFilter: 'blur(5px)',
+                  }}
+                  required
+                  maxLength={80}
+                />
+                {/* Honeypot */}
+                <input
+                  type="text"
+                  placeholder="Your website"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  className="hidden"
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+                <textarea
+                  placeholder="💬 Share your thoughts..."
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all min-h-[100px] text-sm resize-none"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.7)',
+                    backdropFilter: 'blur(5px)',
+                  }}
+                  required
+                  maxLength={2000}
+                />
+                <Button 
+                  type="submit" 
+                  disabled={submitting} 
+                  className="rounded-xl px-6"
+                  size="sm"
+                >
+                  {submitting ? '⏳' : '💬'} {submitting ? 'Posting...' : 'Post'}
+                </Button>
+              </form>
             </div>
           </div>
         </Container>

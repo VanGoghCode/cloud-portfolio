@@ -29,9 +29,6 @@ function CreateBlogPage() {
   const [tagInput, setTagInput] = useState('');
   const [references, setReferences] = useState<string[]>(['']);
   const [featuredImage, setFeaturedImage] = useState('');
-  // Status state is used for draft/published functionality
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [status, setStatus] = useState<'draft' | 'published'>('draft');
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');

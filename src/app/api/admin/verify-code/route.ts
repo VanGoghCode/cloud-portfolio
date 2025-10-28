@@ -80,6 +80,7 @@ export async function POST(request: Request) {
     const successResponse = NextResponse.json({
       success: true,
       message: 'Authentication successful',
+      apiKey: data.sessionToken, // Return token for client-side API calls
       expiresIn: data.expiresIn || 86400, // 24 hours
     });
 
