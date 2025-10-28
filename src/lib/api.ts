@@ -98,6 +98,11 @@ export async function fetchBlogs(
   limit: number = 50,
   lastKey?: string
 ): Promise<BlogsResponse> {
+  // Validate API endpoint is configured
+  if (!API_ENDPOINT) {
+    throw new Error('API endpoint is not configured. Please set NEXT_PUBLIC_API_ENDPOINT in your environment variables.');
+  }
+
   try {
     const params = new URLSearchParams({
       limit: limit.toString(),
@@ -109,20 +114,24 @@ export async function fetchBlogs(
       headers: {
         'Content-Type': 'application/json',
       },
-      // Enable caching for better performance
-      cache: 'force-cache',
-      next: {
-        revalidate: 3600, // Revalidate every hour
-      },
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch blogs');
+      let errorMessage = 'Failed to fetch blogs';
+      try {
+        const error = await response.json();
+        errorMessage = error.error || error.message || errorMessage;
+      } catch {
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
     return await response.json();
   } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error. Please check your internet connection and try again.');
+    }
     throw error;
   }
 }
@@ -131,25 +140,35 @@ export async function fetchBlogs(
  * Fetch a single blog post by ID
  */
 export async function fetchBlogById(id: string): Promise<BlogPost> {
+  // Validate API endpoint is configured
+  if (!API_ENDPOINT) {
+    throw new Error('API endpoint is not configured. Please set NEXT_PUBLIC_API_ENDPOINT in your environment variables.');
+  }
+
   try {
     const response = await fetch(`${API_ENDPOINT}/blogs/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      cache: 'force-cache',
-      next: {
-        revalidate: 3600,
-      },
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch blog');
+      let errorMessage = 'Failed to fetch blog';
+      try {
+        const error = await response.json();
+        errorMessage = error.error || error.message || errorMessage;
+      } catch {
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
     return await response.json();
   } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error. Please check your internet connection and try again.');
+    }
     throw error;
   }
 }

@@ -26,9 +26,9 @@ export function middleware(request: NextRequest) {
   }
   
   // Redirect /blogs to /coming-soon
-  if (pathname === '/blogs' || pathname.startsWith('/blogs/')) {
-    return NextResponse.redirect(new URL('/coming-soon', request.url));
-  }
+  // if (pathname === '/blogs' || pathname.startsWith('/blogs/')) {
+  //   return NextResponse.redirect(new URL('/coming-soon', request.url));
+  // }
   
   return NextResponse.next();
 }

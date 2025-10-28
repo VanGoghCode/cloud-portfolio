@@ -48,7 +48,7 @@ function Enable-CORS($resourceId) {
 
   aws apigateway put-method-response --rest-api-id $API_ID --resource-id $resourceId --http-method OPTIONS --status-code 200 --response-parameters "method.response.header.Access-Control-Allow-Headers=false,method.response.header.Access-Control-Allow-Methods=false,method.response.header.Access-Control-Allow-Origin=false" --region $AWS_REGION --no-cli-pager 2>&1 | Out-Null
 
-  $respParams = "{`"method.response.header.Access-Control-Allow-Headers`":`"'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'`",`"method.response.header.Access-Control-Allow-Methods`":`"'GET,POST,OPTIONS'`",`"method.response.header.Access-Control-Allow-Origin`":`"'*'`"}"
+  $respParams = "{`"method.response.header.Access-Control-Allow-Headers`":`"'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'`",`"method.response.header.Access-Control-Allow-Methods`":`"'GET,POST,PUT,DELETE,OPTIONS'`",`"method.response.header.Access-Control-Allow-Origin`":`"'*'`"}"
   aws apigateway put-integration-response --rest-api-id $API_ID --resource-id $resourceId --http-method OPTIONS --status-code 200 --response-parameters $respParams --region $AWS_REGION --no-cli-pager 2>&1 | Out-Null
 }
 
@@ -73,6 +73,33 @@ aws apigateway put-method --rest-api-id $API_ID --resource-id $BLOGS_RESOURCE_ID
 aws apigateway put-method-response --rest-api-id $API_ID --resource-id $BLOGS_RESOURCE_ID --http-method POST --status-code 200 --response-parameters "method.response.header.Access-Control-Allow-Origin=false" --region $AWS_REGION --no-cli-pager 2>$null
 aws apigateway put-integration --rest-api-id $API_ID --resource-id $BLOGS_RESOURCE_ID --http-method POST --type AWS_PROXY --integration-http-method POST --uri "arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:function:${LAMBDA_BLOGS_FUNCTION}/invocations" --region $AWS_REGION --no-cli-pager 2>$null
 aws lambda add-permission --function-name $LAMBDA_BLOGS_FUNCTION --statement-id apigateway-blogs-post --action lambda:InvokeFunction --principal apigateway.amazonaws.com --source-arn "arn:aws:execute-api:${AWS_REGION}:${AWS_ACCOUNT_ID}:${API_ID}/*/POST/blogs" --region $AWS_REGION --no-cli-pager 2>$null
+
+# /blogs/{id} resource for individual blog operations
+$blogsIdPath = "blogs/{id}"
+$blogsIdResourceId = aws apigateway get-resources --rest-api-id $API_ID --region $AWS_REGION --query "items[?path=='/$blogsIdPath'].id" --output text --no-cli-pager 2>$null
+if ([string]::IsNullOrWhiteSpace($blogsIdResourceId)) {
+  ($null = aws apigateway create-resource --rest-api-id $API_ID --parent-id $BLOGS_RESOURCE_ID --path-part "{id}" --region $AWS_REGION --output json); 
+  $blogsIdResourceId = aws apigateway get-resources --rest-api-id $API_ID --region $AWS_REGION --query "items[?path=='/$blogsIdPath'].id" --output text --no-cli-pager
+}
+Enable-CORS $blogsIdResourceId
+
+# /blogs/{id} GET -> fetch single blog
+aws apigateway put-method --rest-api-id $API_ID --resource-id $blogsIdResourceId --http-method GET --authorization-type NONE --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-method-response --rest-api-id $API_ID --resource-id $blogsIdResourceId --http-method GET --status-code 200 --response-parameters "method.response.header.Access-Control-Allow-Origin=false" --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-integration --rest-api-id $API_ID --resource-id $blogsIdResourceId --http-method GET --type AWS_PROXY --integration-http-method POST --uri "arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:function:${LAMBDA_BLOGS_FUNCTION}/invocations" --region $AWS_REGION --no-cli-pager 2>$null
+aws lambda add-permission --function-name $LAMBDA_BLOGS_FUNCTION --statement-id apigateway-blogs-get-id --action lambda:InvokeFunction --principal apigateway.amazonaws.com --source-arn "arn:aws:execute-api:${AWS_REGION}:${AWS_ACCOUNT_ID}:${API_ID}/*/GET/blogs/*" --region $AWS_REGION --no-cli-pager 2>$null
+
+# /blogs/{id} PUT -> update blog
+aws apigateway put-method --rest-api-id $API_ID --resource-id $blogsIdResourceId --http-method PUT --authorization-type NONE --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-method-response --rest-api-id $API_ID --resource-id $blogsIdResourceId --http-method PUT --status-code 200 --response-parameters "method.response.header.Access-Control-Allow-Origin=false" --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-integration --rest-api-id $API_ID --resource-id $blogsIdResourceId --http-method PUT --type AWS_PROXY --integration-http-method POST --uri "arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:function:${LAMBDA_BLOGS_FUNCTION}/invocations" --region $AWS_REGION --no-cli-pager 2>$null
+aws lambda add-permission --function-name $LAMBDA_BLOGS_FUNCTION --statement-id apigateway-blogs-put --action lambda:InvokeFunction --principal apigateway.amazonaws.com --source-arn "arn:aws:execute-api:${AWS_REGION}:${AWS_ACCOUNT_ID}:${API_ID}/*/PUT/blogs/*" --region $AWS_REGION --no-cli-pager 2>$null
+
+# /blogs/{id} DELETE -> delete blog
+aws apigateway put-method --rest-api-id $API_ID --resource-id $blogsIdResourceId --http-method DELETE --authorization-type NONE --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-method-response --rest-api-id $API_ID --resource-id $blogsIdResourceId --http-method DELETE --status-code 200 --response-parameters "method.response.header.Access-Control-Allow-Origin=false" --region $AWS_REGION --no-cli-pager 2>$null
+aws apigateway put-integration --rest-api-id $API_ID --resource-id $blogsIdResourceId --http-method DELETE --type AWS_PROXY --integration-http-method POST --uri "arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:function:${LAMBDA_BLOGS_FUNCTION}/invocations" --region $AWS_REGION --no-cli-pager 2>$null
+aws lambda add-permission --function-name $LAMBDA_BLOGS_FUNCTION --statement-id apigateway-blogs-delete --action lambda:InvokeFunction --principal apigateway.amazonaws.com --source-arn "arn:aws:execute-api:${AWS_REGION}:${AWS_ACCOUNT_ID}:${API_ID}/*/DELETE/blogs/*" --region $AWS_REGION --no-cli-pager 2>$null
 
 # /admin resource
 $ADMIN_RESOURCE_ID = Ensure-Resource -pathPart "admin"
