@@ -12,9 +12,11 @@ export default function BodyClassGate() {
 
   useEffect(() => {
     const isAdmin = pathname?.startsWith('/admin');
+    const isAdminEditor = pathname === '/admin/create-blog' || pathname?.startsWith('/admin/create-blog');
     const cls = 'admin-mode';
 
-    if (isAdmin) {
+    // Keep neutral admin background for most admin pages, but allow full site background on the editor
+    if (isAdmin && !isAdminEditor) {
       document.body.classList.add(cls);
     } else {
       document.body.classList.remove(cls);

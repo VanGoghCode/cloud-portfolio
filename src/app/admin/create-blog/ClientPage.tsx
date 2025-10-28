@@ -19,6 +19,7 @@ import {
   FaAlignCenter, FaAlignRight, FaAlignJustify,
   FaHighlighter, FaUndo, FaRedo, FaSave, FaEye
 } from 'react-icons/fa';
+import { Button } from '@/components';
 
 function CreateBlogPage() {
   const router = useRouter();
@@ -212,121 +213,130 @@ function CreateBlogPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading editor...</p>
+          <p className="mt-4 text-gray-900">Loading editor...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Bar */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <h1 className="text-xl font-bold text-gray-900">Create Blog Post</h1>
-            <div className="flex items-center space-x-4">
-              <button
+    <div className="min-h-screen">
+      {/* Top Bar - matching header style from main site */}
+      <div className="sticky top-0 z-1001 flex justify-center px-4 sm:px-6 lg:px-8 py-4">
+        <div className="w-full max-w-7xl">
+          <nav className="relative flex items-center justify-between px-6 py-4 rounded-2xl border border-white/30 bg-white/70 backdrop-blur-md shadow-lg transition-all duration-400">
+            <h1 className="text-xl font-semibold text-gray-900">Create Blog Post</h1>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => handleSave('draft')}
                 disabled={isSaving}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50"
+                className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50"
+                title="Save as Draft"
               >
-                <FaSave className="inline mr-2" />
+                <FaSave className="mr-2" />
                 Save Draft
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={() => handleSave('published')}
                 disabled={isSaving}
-                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50"
+                className="bg-white text-gray-900 hover:bg-gray-50"
+                title="Publish"
               >
-                <FaEye className="inline mr-2" />
+                <FaEye className="mr-2" />
                 Publish
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={handleLogout}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                className="bg-white text-gray-900 hover:bg-gray-50"
+                title="Logout"
               >
                 Logout
-              </button>
+              </Button>
             </div>
-          </div>
+          </nav>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Messages */}
         {message && (
-          <div className="mb-6 rounded-lg bg-green-50 p-4 border border-green-200">
-            <p className="text-sm font-medium text-green-800">{message}</p>
+          <div className="mb-6 rounded-xl p-4 border border-emerald-400/30 bg-emerald-400/10 backdrop-blur-md">
+            <p className="text-sm font-medium text-emerald-900">{message}</p>
           </div>
         )}
         {error && (
-          <div className="mb-6 rounded-lg bg-red-50 p-4 border border-red-200">
-            <p className="text-sm font-medium text-red-800">{error}</p>
+          <div className="mb-6 rounded-xl p-4 border border-red-400/30 bg-red-400/10 backdrop-blur-md">
+            <p className="text-sm font-medium text-red-900">{error}</p>
           </div>
         )}
 
-        {/* Metadata Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        {/* Metadata Section - glass card */}
+        <div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-6 mb-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Blog Details</h2>
           
           {/* Title */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-800 mb-2">
               Title *
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2 text-2xl font-bold border-0 border-b-2 border-gray-200 focus:border-purple-600 focus:outline-none"
+              className="w-full px-4 py-2 text-2xl font-bold bg-transparent border-0 border-b-2 border-white/20 focus:outline-none text-gray-900 placeholder:text-gray-600"
               placeholder="Enter blog title..."
             />
           </div>
 
           {/* Excerpt */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-800 mb-2">
               Excerpt
             </label>
             <textarea
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
               rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-2 rounded-xl bg-white/5 border border-white/20 focus:ring-2 focus:border-transparent text-gray-900 placeholder:text-gray-600"
               placeholder="Brief description of your blog post..."
             />
           </div>
 
           {/* Featured Image */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-800 mb-2">
               Featured Image URL
             </label>
             <input
               type="url"
               value={featuredImage}
               onChange={(e) => setFeaturedImage(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-2 rounded-xl bg-white/5 border border-white/20 focus:ring-2  focus:border-transparent text-gray-900 placeholder:text-gray-600"
               placeholder="https://example.com/image.jpg"
             />
           </div>
 
           {/* Tags */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-800 mb-2">
               Tags/Keywords
             </label>
             <div className="flex flex-wrap gap-2 mb-2">
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800"
+                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-500/20 text-gray-900 border border-purple-400/30"
                 >
                   {tag}
                   <button
                     onClick={() => handleRemoveTag(tag)}
-                    className="ml-2 text-purple-600 hover:text-purple-800"
+                    className="ml-2 text-gray-900 hover:text-gray-700"
                   >
                     ×
                   </button>
@@ -339,21 +349,23 @@ function CreateBlogPage() {
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 rounded-xl bg-white/5 border border-white/20 focus:ring-2  focus:border-transparent text-gray-900 placeholder:text-gray-600"
                 placeholder="Add a tag and press Enter..."
               />
-              <button
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={handleAddTag}
-                className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700"
+                className="bg-white text-gray-900 hover:bg-gray-50"
               >
                 Add
-              </button>
+              </Button>
             </div>
           </div>
 
           {/* References */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-800 mb-2">
               References
             </label>
             {references.map((ref, index) => (
@@ -362,64 +374,68 @@ function CreateBlogPage() {
                   type="url"
                   value={ref}
                   onChange={(e) => handleReferenceChange(index, e.target.value)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="flex-1 px-4 py-2 rounded-xl bg-white/5 border border-white/20 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder:text-gray-600"
                   placeholder="https://example.com/reference"
                 />
                 {references.length > 1 && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => handleRemoveReference(index)}
-                    className="px-3 py-2 text-red-600 hover:text-red-800"
+                    className="bg-white text-red-600 hover:bg-red-50"
                   >
                     Remove
-                  </button>
+                  </Button>
                 )}
               </div>
             ))}
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleAddReference}
-              className="mt-2 text-sm text-purple-600 hover:text-purple-800"
+              className="mt-2 bg-white text-gray-900 hover:bg-gray-50"
             >
               + Add Reference
-            </button>
+            </Button>
           </div>
         </div>
 
-        {/* Editor Toolbar */}
-        <div className="bg-white rounded-t-lg shadow-sm border border-gray-200 border-b-0 p-4">
+        {/* Editor Toolbar - glass card */}
+        <div className="rounded-t-2xl border border-white/20 bg-white/10 backdrop-blur-md border-b-0 p-4">
           <div className="flex flex-wrap gap-2">
             {/* Text Formatting */}
-            <div className="flex gap-1 border-r border-gray-200 pr-2">
+            <div className="flex gap-1 border-r border-white/20 pr-2">
               <button
                 onClick={() => editor.chain().focus().toggleBold().run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('bold') ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive('bold') ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Bold"
               >
                 <FaBold />
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleItalic().run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('italic') ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive('italic') ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Italic"
               >
                 <FaItalic />
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleUnderline().run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('underline') ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive('underline') ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Underline"
               >
                 <FaUnderline />
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleStrike().run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('strike') ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive('strike') ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Strikethrough"
               >
                 <FaStrikethrough />
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleHighlight().run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('highlight') ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive('highlight') ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Highlight"
               >
                 <FaHighlighter />
@@ -427,24 +443,24 @@ function CreateBlogPage() {
             </div>
 
             {/* Headings */}
-            <div className="flex gap-1 border-r border-gray-200 pr-2">
+            <div className="flex gap-1 border-r border-white/20 pr-2">
               <button
                 onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('heading', { level: 1 }) ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive('heading', { level: 1 }) ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Heading 1"
               >
                 H1
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('heading', { level: 2 }) ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive('heading', { level: 2 }) ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Heading 2"
               >
                 H2
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('heading', { level: 3 }) ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive('heading', { level: 3 }) ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Heading 3"
               >
                 H3
@@ -452,17 +468,17 @@ function CreateBlogPage() {
             </div>
 
             {/* Lists */}
-            <div className="flex gap-1 border-r border-gray-200 pr-2">
+            <div className="flex gap-1 border-r border-white/20 pr-2">
               <button
                 onClick={() => editor.chain().focus().toggleBulletList().run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('bulletList') ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive('bulletList') ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Bullet List"
               >
                 <FaListUl />
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('orderedList') ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive('orderedList') ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Ordered List"
               >
                 <FaListOl />
@@ -470,31 +486,31 @@ function CreateBlogPage() {
             </div>
 
             {/* Alignment */}
-            <div className="flex gap-1 border-r border-gray-200 pr-2">
+            <div className="flex gap-1 border-r border-white/20 pr-2">
               <button
                 onClick={() => editor.chain().focus().setTextAlign('left').run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'left' }) ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive({ textAlign: 'left' }) ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Align Left"
               >
                 <FaAlignLeft />
               </button>
               <button
                 onClick={() => editor.chain().focus().setTextAlign('center').run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'center' }) ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive({ textAlign: 'center' }) ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Align Center"
               >
                 <FaAlignCenter />
               </button>
               <button
                 onClick={() => editor.chain().focus().setTextAlign('right').run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'right' }) ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive({ textAlign: 'right' }) ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Align Right"
               >
                 <FaAlignRight />
               </button>
               <button
                 onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'justify' }) ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive({ textAlign: 'justify' }) ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Justify"
               >
                 <FaAlignJustify />
@@ -502,31 +518,31 @@ function CreateBlogPage() {
             </div>
 
             {/* Insert */}
-            <div className="flex gap-1 border-r border-gray-200 pr-2">
+            <div className="flex gap-1 border-r border-white/20 pr-2">
               <button
                 onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('blockquote') ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive('blockquote') ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Quote"
               >
                 <FaQuoteLeft />
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('codeBlock') ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive('codeBlock') ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Code Block"
               >
                 <FaCode />
               </button>
               <button
                 onClick={addImage}
-                className="p-2 rounded hover:bg-gray-100 text-gray-600"
+                className="p-2 rounded hover:bg-white/20 text-gray-800"
                 title="Insert Image"
               >
                 <FaImage />
               </button>
               <button
                 onClick={setLink}
-                className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('link') ? 'bg-purple-100 text-purple-600' : 'text-gray-600'}`}
+                className={`p-2 rounded hover:bg-white/20 ${editor.isActive('link') ? 'bg-purple-500/20 text-purple-900' : 'text-gray-800'}`}
                 title="Insert Link"
               >
                 <FaLink />
@@ -534,7 +550,7 @@ function CreateBlogPage() {
             </div>
 
             {/* Color Picker */}
-            <div className="flex gap-1 border-r border-gray-200 pr-2">
+            <div className="flex gap-1 border-r border-white/20 pr-2">
               <input
                 type="color"
                 value={textColor}
@@ -552,7 +568,7 @@ function CreateBlogPage() {
               <button
                 onClick={() => editor.chain().focus().undo().run()}
                 disabled={!editor.can().undo()}
-                className="p-2 rounded hover:bg-gray-100 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 rounded hover:bg-white/20 text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Undo"
               >
                 <FaUndo />
@@ -560,7 +576,7 @@ function CreateBlogPage() {
               <button
                 onClick={() => editor.chain().focus().redo().run()}
                 disabled={!editor.can().redo()}
-                className="p-2 rounded hover:bg-gray-100 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 rounded hover:bg-white/20 text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Redo"
               >
                 <FaRedo />
@@ -569,8 +585,8 @@ function CreateBlogPage() {
           </div>
         </div>
 
-        {/* Editor Content */}
-        <div className="bg-white rounded-b-lg shadow-sm border border-gray-200 min-h-[600px]">
+        {/* Editor Content - glass card */}
+        <div className="rounded-b-2xl border border-white/20 bg-white/10 backdrop-blur-md min-h-[600px] p-6">
           <EditorContent editor={editor} />
         </div>
       </div>
@@ -578,14 +594,16 @@ function CreateBlogPage() {
       <style jsx global>{`
         .ProseMirror {
           outline: none;
+          color: #1f2937;
         }
         .ProseMirror p.is-editor-empty:first-child::before {
-          color: #adb5bd;
+          color: #6b7280;
           content: attr(data-placeholder);
           float: left;
           height: 0;
           pointer-events: none;
         }
+        .ProseMirror a { color: #3b82f6; }
         .ProseMirror img {
           max-width: 100%;
           height: auto;
@@ -593,14 +611,15 @@ function CreateBlogPage() {
           margin: 1rem 0;
         }
         .ProseMirror code {
-          background-color: #f3f4f6;
-          border-radius: 4px;
-          padding: 2px 6px;
+          background-color: rgba(0, 0, 0, 0.05);
+          border-radius: 6px;
+          padding: 3px 8px;
           font-family: 'Courier New', monospace;
+          color: #1f2937;
         }
         .ProseMirror pre {
-          background-color: #1f2937;
-          color: #f3f4f6;
+          background-color: rgba(17, 24, 39, 0.9);
+          color: #e5e7eb;
           border-radius: 8px;
           padding: 1rem;
           overflow-x: auto;
@@ -611,15 +630,16 @@ function CreateBlogPage() {
           color: inherit;
         }
         .ProseMirror blockquote {
-          border-left: 4px solid #9333ea;
+          border-left: 4px solid rgba(147, 51, 234, 0.6);
           padding-left: 1rem;
           margin: 1rem 0;
-          color: #6b7280;
+          color: #4b5563;
         }
         .ProseMirror mark {
-          background-color: #fef3c7;
+          background-color: rgba(254, 243, 199, 0.8);
           padding: 2px 4px;
           border-radius: 2px;
+          color: #1f2937;
         }
       `}</style>
     </div>
